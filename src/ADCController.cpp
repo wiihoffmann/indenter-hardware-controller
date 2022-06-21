@@ -4,20 +4,13 @@
 
 ADCController::ADCController(uint8_t interruptPin, Adafruit_ADS1115 &ads){
   this->interruptPin = interruptPin;
+  this->ads = &ads;
 
   // setup interrupt pin
   pinMode(interruptPin, INPUT);
 
-  // setup the ADC
-  this->ads = &ads;
-  Serial.println((uint32_t)this->ads);
-
-
-  Serial.println("setting up");
-
   // halt if we cannot detect the ADC
   if (!this->ads->begin()){
-    
     while (1){
       digitalWrite(LED_BUILTIN, HIGH);
       delay(100);
@@ -25,9 +18,12 @@ ADCController::ADCController(uint8_t interruptPin, Adafruit_ADS1115 &ads){
       delay(100);
     }
   }
+  
   this->ads->setGain(GAIN_TWOTHIRDS);                          //TODO: change this!
   this->ads->setDataRate(RATE_ADS1115_860SPS);
-
+  
+  // make sure the ADC is not running
+  stopADC();
 
   scaler = 0; //TODO: code to calculate/set the scaler
 }

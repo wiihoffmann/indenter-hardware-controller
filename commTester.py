@@ -1,3 +1,4 @@
+from threading import Thread
 import serial
 import time
 from struct import *
@@ -29,11 +30,18 @@ def sendCode(preamble, int):
     arduino.write(dataToSend)
 
 
+def monitor():
+    while True:
+        print(arduino.readline().decode('ascii'), end = '') # printing the value
+
+
 
 arduino = serial.Serial(port='/dev/ttyACM0', baudrate=2000000)
+x = Thread(target=monitor, args=()).start()
 time.sleep(2)
 sendMeasurementBegin()
+time.sleep(.1)
+print("starting another")
+sendMeasurementBegin()
 
-while True:
-    print(arduino.readline().decode('ascii')) # printing the value
 

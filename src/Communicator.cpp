@@ -47,16 +47,6 @@ MeasurementParams Communicator::receiveMeasurementParams(){
 
 	while(Serial.available() < sizeof(MeasurementParams)); 				//TODO: add timeout to waiting
 	Serial.readBytes(pa.paramArray, sizeof(MeasurementParams));
-	
-	Serial.println(pa.parameters.calFactor);
-	Serial.println(pa.parameters.preload);
-	Serial.println(pa.parameters.preloadTime);
-	Serial.println(pa.parameters.maxLoad);
-	Serial.println(pa.parameters.maxLoadTime);
-	Serial.println(pa.parameters.stepDelay);
-	Serial.println(pa.parameters.holdDownDelay);
-	Serial.println(pa.parameters.holdUpDelay);
-
 
 	return pa.parameters;
 }

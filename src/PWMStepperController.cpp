@@ -55,6 +55,11 @@ uint32_t PWMStepperController::getDisplacement(){
 }
 
 
+void PWMStepperController::resetDisplacement(){
+  displacement = 0;
+}
+
+
 uint8_t PWMStepperController::getDirection(){
   return direction;
 }

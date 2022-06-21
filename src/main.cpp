@@ -8,12 +8,13 @@
 Adafruit_ADS1115 ads; /* Use this for the 16-bit version */
 // Adafruit_ADS1015 ads;     /* Use this for the 12-bit version */
 
-ADCController *adc;
+
 BasicStepperController *xAxis;
 BasicStepperController *yAxis;
 BasicStepperController *zAxis;
 PWMStepperController *zAxisPWM;
 
+ADCController *adc;
 MeasurementController *indenter;
 Communicator *comm;
 
@@ -44,7 +45,6 @@ void benchmark(){
         
 void setup(void){
   Serial.begin(2000000);
-
   comm = Communicator::getInstance();
 
   xAxis = new BasicStepperController(5,4, true);
@@ -56,12 +56,10 @@ void setup(void){
   adc->setInterruptFunc([](){ready = true;});
 
   indenter = MeasurementController::getInstance();
-  indenter->setUpController();
+  indenter->setUpController(adc, zAxisPWM);
   
   
-
   Serial.println("setup complete");
-  zAxisPWM->startMovingDown(1200);
 }
 
 
@@ -71,27 +69,26 @@ void loop(void){
   // if(zAxisPWM->getDisplacement() > 3000) zAxisPWM->startMovingUp(1200);
   // else if(zAxisPWM->getDisplacement() <= 200) zAxisPWM->startMovingDown(1200);
 
-
   //Serial.print("Differential: "); Serial.print(results); Serial.print("("); Serial.print(ads.computeVolts(results), 4); Serial.println("V)");
 
   command = comm->getCommand();
   switch(command){
     case 'E':
       // TODO: Emergency stop	and send e-stop complete
+      indenter->emergencyStop();
       break;
     case 'X':
-      // TODO: move Z axis	
+      // TODO: move X axis	
       break;
     case 'Y':
-      // TODO: move Z axis	
+      // TODO: move Y axis	
       break;
     case 'Z':	
       // TODO: move Z axis
       break;
     case 'B':
-      Serial.println("case B - starting measurement");
-      indenter->performMeasurement(comm->receiveMeasurementParams(), *adc, *zAxisPWM);
       // TODO: begin measurement
+      indenter->performMeasurement(comm->receiveMeasurementParams());
       break;
     case 'R':
       // TODO: handle error
@@ -100,8 +97,6 @@ void loop(void){
       // TODO: send an error code here
       break;
   }
-
-
 }
 
 
