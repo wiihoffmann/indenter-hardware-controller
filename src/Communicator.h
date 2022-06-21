@@ -26,6 +26,5 @@
 	private:
 			Communicator();
 
-
 	};
 #endif

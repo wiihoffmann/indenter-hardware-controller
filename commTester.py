@@ -32,13 +32,15 @@ def sendCode(preamble, int):
 
 def monitor():
     while True:
-        print(arduino.readline().decode('ascii'), end = '') # printing the value
-
+        try: 
+            print(arduino.readline().decode('utf-8'), end = '') # printing the value
+        except Exception as e:
+            pass
 
 
 arduino = serial.Serial(port='/dev/ttyACM0', baudrate=2000000)
 x = Thread(target=monitor, args=()).start()
-time.sleep(2)
+time.sleep(3)
 sendMeasurementBegin()
 time.sleep(.1)
 print("starting another")

@@ -29,8 +29,7 @@ void MeasurementController::DataReadyHandler(){
       stage = 4;      
       break;
     case 4: // retract
-      Serial.println("stage 4");
-      Serial.println("done measurement");  
+      Serial.println("stage 4"); 
       adc->stopADC();  
       break;
     default:
@@ -67,14 +66,20 @@ void MeasurementController::emergencyStop(){
 
 }
 
+void nothing(){
+  delay(100); 
+  //MeasurementController::adc->stopADC();
+}
 
 void MeasurementController::performMeasurement(MeasurementParams parameters){
-  Serial.println("case B - starting measurement");
+  Serial.println("in performMeasurement");
   params = parameters;
   stage = 0;
   MeasurementController::zAxis->resetDisplacement();
   
-  adc->startADC(DataReadyHandler);
+  adc->startADC(nothing);
+  Serial.println("adc started");
+  adc->stopADC();
 
   measurementOngoing = true;
   

@@ -72,8 +72,9 @@ void loop(void){
   //Serial.print("Differential: "); Serial.print(results); Serial.print("("); Serial.print(ads.computeVolts(results), 4); Serial.println("V)");
 
   command = comm->getCommand();
+  Serial.println(command);
   switch(command){
-    case 'E':
+    case 'S':
       // TODO: Emergency stop	and send e-stop complete
       indenter->emergencyStop();
       break;
@@ -88,15 +89,21 @@ void loop(void){
       break;
     case 'B':
       // TODO: begin measurement
+      Serial.println("starting measurement");
       indenter->performMeasurement(comm->receiveMeasurementParams());
+      Serial.println("done starting");
       break;
-    case 'R':
+    case 'E':
       // TODO: handle error
       break;
     default:
       // TODO: send an error code here
+      Serial.print("Error. Command code was: "); Serial.println(command);
       break;
   }
+
+  delay(50);
+
 }
 
 

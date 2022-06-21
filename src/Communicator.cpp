@@ -2,8 +2,8 @@
 
 /*
 	Comm protocol:
-	*R<int 16>			- ERROR - int gives error code
-	*E<int 16> 		  - emergency stop - e-stop delay
+	*E<int 16>			- ERROR - int gives error code
+	*S<int 16> 		  - emergency stop - e-stop delay
 	*X<int 16> 			- x-axis move at step delay given by <int 16> - 0=stop - pos/neg sets direction
 	*Y<int 16> 			- y-axis move at step delay given by <int 16>
 	*Z<int 16>			- z-axis move at step delay given by <int 16>
@@ -45,7 +45,9 @@ void Communicator::sendDataEnd(){
 MeasurementParams Communicator::receiveMeasurementParams(){
 	paramAdapter pa;
 
-	while(Serial.available() < sizeof(MeasurementParams)); 				//TODO: add timeout to waiting
+	while(Serial.available() < sizeof(MeasurementParams)){ 				//TODO: add timeout to waiting
+		Serial.print("WAITING. Bytes available: "); Serial.println(Serial.available());
+	}
 	Serial.readBytes(pa.paramArray, sizeof(MeasurementParams));
 
 	return pa.parameters;
@@ -53,33 +55,9 @@ MeasurementParams Communicator::receiveMeasurementParams(){
 
 
 char Communicator::getCommand(){
-	if(Serial.available() >= 2 && Serial.read() == '*'){
+  if(Serial.available() >= 2 && Serial.read() == '*'){
 		return Serial.read();
 	}
-	return 'R';
+	return 'E';
 }
 
-
-		// switch(command){
-		// 	case 'E':
-		// 		// TODO: Emergency stop	
-		// 		break;
-		// 	case 'X':
-		// 		// TODO: move Z axis	
-		// 		break;
-		// 	case 'Y':
-		// 		// TODO: move Z axis	
-		// 		break;
-		// 	case 'Z':	
-		// 		// TODO: move Z axis
-		// 		break;
-		// 	case 'B':
-		// 		// TODO: begin measurement
-		// 		break;
-		// 	case 'R':
-		// 		// TODO: handle error
-		// 		break;
-		// 	default:
-		// 		// TODO: send an error code here
-		// 		break;
-		// }
