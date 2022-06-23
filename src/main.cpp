@@ -60,6 +60,7 @@ void setup(void){
   
   
   Serial.println("setup complete");
+  pinMode(LED_BUILTIN, OUTPUT);
 }
 
 
@@ -72,14 +73,14 @@ void loop(void){
   //Serial.print("Differential: "); Serial.print(results); Serial.print("("); Serial.print(ads.computeVolts(results), 4); Serial.println("V)");
 
   command = comm->getCommand();
-  Serial.println(command);
   switch(command){
     case 'S':
       // TODO: Emergency stop	and send e-stop complete
       indenter->emergencyStop();
       break;
     case 'X':
-      // TODO: move X axis	
+      // TODO: move X axis
+      Serial.print("got code X with int: "); Serial.println(comm->getInt());
       break;
     case 'Y':
       // TODO: move Y axis	
@@ -98,11 +99,10 @@ void loop(void){
       break;
     default:
       // TODO: send an error code here
-      Serial.print("Error. Command code was: "); Serial.println(command);
+      digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+      delay(100);
       break;
   }
-
-  delay(50);
 
 }
 

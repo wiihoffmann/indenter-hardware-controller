@@ -9,7 +9,8 @@
 	*Z<int 16>			- z-axis move at step delay given by <int 16>
 	*B<double><uint 8><uint8><uint 8><uint 8><uint 16><uint 16><uint 16>				- begin measurement (calibration factor, preload, preload time, max load, max load time, step delay, hold step down delay, hold step up delay)
 	*P<uint 32><double><uint 8> - data point (displacement, load, phase)
-	*C					- complete
+	*C					    - complete
+  *N              - no command
 
 */
 
@@ -27,13 +28,7 @@ Communicator::Communicator(){
 
 
 void Communicator::sendDataPoint(uint32_t displacement, float load, uint8_t measurementStage){
-	uint8_t data[11];
-	data[0] = displacement >> 24;
-	data[1] = displacement >> 16;
-	data[2] = displacement >> 8;
-	data[3] = displacement;
 
-	Serial.write(data, 11);
 }
 
 
@@ -46,18 +41,35 @@ MeasurementParams Communicator::receiveMeasurementParams(){
 	paramAdapter pa;
 
 	while(Serial.available() < sizeof(MeasurementParams)){ 				//TODO: add timeout to waiting
-		Serial.print("WAITING. Bytes available: "); Serial.println(Serial.available());
+    Serial.println("waiting for all params to arrive");
 	}
 	Serial.readBytes(pa.paramArray, sizeof(MeasurementParams));
+
+  Serial.print("remaining bytes available: "); Serial.println(Serial.available());
 
 	return pa.parameters;
 }
 
 
-char Communicator::getCommand(){
-  if(Serial.available() >= 2 && Serial.read() == '*'){
-		return Serial.read();
+int16_t Communicator::getInt(){
+  int16_t num = 0;
+  //wait for bytes to arrive
+	while(Serial.available() < sizeof(uint16_t)){ 				//TODO: add timeout to waiting
+    Serial.print ("waiting for bytes");
 	}
-	return 'E';
+  
+  num |= (uint16_t)Serial.read();
+  num |= (uint16_t)Serial.read() << 8;
+  return num;
+}
+
+
+char Communicator::getCommand(){
+  // make sure we have the asterisk and following command letter
+  if(Serial.available() >= 2 && Serial.find('*')){
+    return Serial.read(); // return the letter after the asterisk
+	}
+
+	return 'N';
 }
 

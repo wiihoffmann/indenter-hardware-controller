@@ -20,6 +20,7 @@
 			void sendDataPoint(uint32_t displacement, float load, uint8_t measurementStage);
 			void sendDataEnd();
 			char getCommand();
+			int16_t getInt();
 			MeasurementParams receiveMeasurementParams();
 
 

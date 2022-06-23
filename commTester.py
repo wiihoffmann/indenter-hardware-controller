@@ -2,6 +2,7 @@ from threading import Thread
 import serial
 import time
 from struct import *
+import sys
 
 
 def sendMeasurementBegin():
@@ -17,33 +18,55 @@ def sendMeasurementBegin():
 
     dataToSend = pack("<%dsfBBBBHHH" % (len(preamble)), preamble, calFactor, preload, preloadTime, maxLoad, maxLoadTime, stepDelay, holdDownDelay, holdUpDelay)
 
-    print(len(dataToSend))
-    print(dataToSend)
+    # print(len(dataToSend))
+    # print(dataToSend)
+    print("HOST: send measurement init sequence")
 
     arduino.write(dataToSend)
 
 
 def sendCode(preamble, int):
-    dataToSend = pack("<%dsfBBBBHHH" % (len(preamble)), preamble, int)
-    print(len(dataToSend))
-    print(dataToSend)
+    preamble = bytes(preamble, 'utf-8')
+    dataToSend = pack("<%dsh" % (len(preamble)), preamble, int)
     arduino.write(dataToSend)
 
 
 def monitor():
-    while True:
-        try: 
-            print(arduino.readline().decode('utf-8'), end = '') # printing the value
+    while not kill:
+        try:
+            if arduino.in_waiting:
+                print(arduino.readline().decode('utf-8'), end = '') # printing the value
         except Exception as e:
             pass
 
 
-arduino = serial.Serial(port='/dev/ttyACM0', baudrate=2000000)
+arduino = serial.Serial(port='/dev/ttyACM0', baudrate=2000000, timeout=None)
+arduino.flush()
+kill = False
 x = Thread(target=monitor, args=()).start()
 time.sleep(3)
-sendMeasurementBegin()
-time.sleep(.1)
-print("starting another")
-sendMeasurementBegin()
 
 
+TIMEOUT = .1
+
+
+sendMeasurementBegin()
+
+print("HOST: sending more commands")
+
+time.sleep(TIMEOUT)
+sendCode("*X", 12345)
+time.sleep(TIMEOUT)
+sendCode("*X",-12345)
+time.sleep(TIMEOUT)
+sendCode("*X", 12321)
+
+# time.sleep(TIMEOUT)
+# sendMeasurementBegin()
+# time.sleep(TIMEOUT)
+# sendMeasurementBegin()
+
+
+time.sleep(.2)
+kill = True
+sys.exit()
