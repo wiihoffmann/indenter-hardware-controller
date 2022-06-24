@@ -81,12 +81,10 @@ void loop(void){
       Serial.print("Z: "); Serial.println(comm->getInt());
       break;
     case 'B':
-      Serial.print("B");
-      comm->receiveMeasurementParams();
-      //indenter->performMeasurement(comm->receiveMeasurementParams());
+      indenter->performMeasurement(comm->receiveMeasurementParams());
       break;
     case 'M': // request for raw measurement
-      comm->sendCommand('M', comm->getInt()+1);
+      comm->sendCommand('M', adc->getRawReading());
     case 'E':
       // TODO: handle error
       break;

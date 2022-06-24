@@ -18,6 +18,13 @@
   };
 
 
+  struct DataPoint{
+    int32_t displacement;
+    double load;
+    uint8_t stage;
+  };
+
+
   class MeasurementController{
     public:
       // delete these methods to prevent making accidental copies of the class.

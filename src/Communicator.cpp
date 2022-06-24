@@ -8,7 +8,7 @@
 	*Y<int 16> 			- y-axis move at step delay given by <int 16>
 	*Z<int 16>			- z-axis move at step delay given by <int 16>
 	*B<double><uint 8><uint8><uint 8><uint 8><uint 16><uint 16><uint 16>				- begin measurement (calibration factor, preload, preload time, max load, max load time, step delay, hold step down delay, hold step up delay)
-	*P<uint 32><double><uint 8> - data point (displacement, load, phase)
+	*D<int 32><double><uint 8> - data point (displacement, load, phase)
 	*C					    - complete
   *M<int 16>      - measure load
   *N              - no command
@@ -28,7 +28,13 @@ Communicator::Communicator(){
 
 
 void Communicator::sendDataPoint(uint32_t displacement, float load, uint8_t measurementStage){
-
+  dataPointAdapter dp;
+  dp.point.displacement = displacement;
+  dp.point.load = load;
+  dp.point.stage = measurementStage;
+  
+  Serial.write("*D");
+  Serial.write(dp.pointArray, sizeof(DataPoint));
 }
 
 

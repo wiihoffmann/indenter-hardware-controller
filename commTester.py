@@ -12,59 +12,65 @@ def monitor():
         try:
             if comm.arduino.in_waiting:
                 print(comm.arduino.read_all().decode('utf-8'), end = '') # printing the value
+                # print(comm.arduino.readline().hex()) # printing the value
         except Exception as e:
             pass
 
 
+def performMeasurement(params):
+    comm.sendMeasurementBegin(params)
+    # wait for a reply
+    command = comm.readCommand()
+    
+    point = None
+
+    # process data until we see the complete flag
+    while command != 'C':
+        if command != 'D':
+            print("Error: exptected command 'D' but got '" + command + "'")
+            print(point)
+        else:
+            point = comm.readDataPoint()
+            # TODO: process the data point
+
+        command = comm.readCommand()
+    
+    print(point)
+
+
 def testSequence():
-    print(comm.getRawADCReading())
+    print("RAW: " + str(comm.getRawADCReading()))
 
     mp = MeasurementParams()
-    comm.sendMeasurementBegin(mp)
-    while comm.arduino.in_waiting < 1:
-        time.sleep(0)
-    print(comm.arduino.read_all())
-
-    comm.sendCode("*S", 11111)
-    while comm.arduino.in_waiting < 4:
-        time.sleep(0)
-    print(comm.arduino.read_all())
-
-    comm.sendCode("*X", 12345)
-    while comm.arduino.in_waiting < 4:
-        time.sleep(0)
-    print(comm.arduino.read_all())
-
-    comm.sendCode("*X",-12345)
-    while comm.arduino.in_waiting < 4:
-        time.sleep(0)
-    print(comm.arduino.read_all())
-
-    comm.sendCode("*X", 12321)
-    while comm.arduino.in_waiting < 4:
-        time.sleep(0)
-    print(comm.arduino.read_all())
+    performMeasurement(mp)
     
-    print(comm.getRawADCReading())
+ 
+    # comm.sendCode("*S", 11111)
+    # while comm.arduino.in_waiting < 4:
+    #     time.sleep(0)
+    # print(comm.arduino.read_all())
 
-    comm.sendMeasurementBegin(mp)
-    while comm.arduino.in_waiting < 1:
-        time.sleep(0)
-    print(comm.arduino.read_all())
+    # comm.sendCode("*X", 12345)
+    # while comm.arduino.in_waiting < 4:
+    #     time.sleep(0)
+    # print(comm.arduino.read_all())
+    
+    # print("RAW: " + str(comm.getRawADCReading()))
 
-    comm.sendMeasurementBegin(mp)
-    while comm.arduino.in_waiting < 1:
-        time.sleep(0)
-    print(comm.arduino.read_all())
+    # comm.sendMeasurementBegin(mp)
+    # while comm.arduino.in_waiting < 1:
+    #     time.sleep(0)
+    # print(comm.arduino.read_all())
+
 
 
 
 if __name__ == '__main__':
-    while comm.readCommand() != b'R':
+    while comm.readCommand() != 'R':
         time.sleep(0)
     #comm.arduino.flush()
 
-    for i in range(10):
+    for i in range(50):
         print("iteration " + str(i))
         testSequence()
 

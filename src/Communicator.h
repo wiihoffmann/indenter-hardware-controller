@@ -9,6 +9,12 @@
 		byte paramArray[sizeof(MeasurementParams)];
 	};
 
+	union dataPointAdapter {
+		DataPoint point;
+		byte pointArray[sizeof(DataPoint)];
+	};
+
+
 	class Communicator{
 	public:
 			// delete these methods to prevent making accidental copies of the class.

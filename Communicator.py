@@ -22,7 +22,7 @@ class MeasurementParams:
 class Communicator:
 
     def __init__(self):
-        self.arduino = serial.Serial(port='/dev/ttyACM0', baudrate=2000000, timeout=None)
+        self.arduino = serial.Serial(port='/dev/ttyACM1', baudrate=2000000, timeout=None)
         self.arduino.flush()
 
 
@@ -37,11 +37,19 @@ class Communicator:
         self.arduino.write(dataToSend)
 
 
-    def readCommand(self):
-        if self.arduino.in_waiting >= 2 and self.arduino.read_until(b'*', self.arduino.in_waiting):
-            return self.arduino.read()
+    def commandAvailable(self):
+        return self.arduino.in_waiting >= 4
 
-        return 'L'
+
+    def readCommand(self):
+        while not self.commandAvailable():
+            time.sleep(0)
+        
+        if self.arduino.read_until(b'*', self.arduino.in_waiting):
+            return self.arduino.read().decode('utf-8')
+        
+        print("trying again")
+        self.readCommand()
 
 
     def readInt(self):
@@ -50,15 +58,21 @@ class Communicator:
         return value
 
 
+    def readDataPoint(self):
+        # wait for the data point to arrive
+        while self.arduino.in_waiting < 9:
+            time.sleep(0)
+
+        data = unpack("<ifB", self.arduino.read(9))
+        return data
+
     def getRawADCReading(self):      
         # request raw ADC value and wait for reply
         self.sendCode("*M", 1234)
-        while self.arduino.in_waiting < 4: # reply is 4 bytes
-            time.sleep(0)
         
         # make sure we get a raw adc reading
         command = self.readCommand()
-        if command != b'M': return
+        if command != 'M': return
         reading = self.readInt()
 
         return reading
