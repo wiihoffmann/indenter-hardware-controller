@@ -6,8 +6,6 @@ from Communicator import *
 
 comm = Communicator()
 
-TIMEOUT = .5
-
 
 def monitor():
     while not kill:
@@ -18,38 +16,63 @@ def monitor():
             pass
 
 
-if __name__ == '__main__':
-    time.sleep(3)
+def testSequence():
+    print(comm.getRawADCReading())
 
+    mp = MeasurementParams()
+    comm.sendMeasurementBegin(mp)
+    while comm.arduino.in_waiting < 1:
+        time.sleep(0)
+    print(comm.arduino.read_all())
 
-    comm.calibrate()
+    comm.sendCode("*S", 11111)
+    while comm.arduino.in_waiting < 4:
+        time.sleep(0)
+    print(comm.arduino.read_all())
 
+    comm.sendCode("*X", 12345)
+    while comm.arduino.in_waiting < 4:
+        time.sleep(0)
+    print(comm.arduino.read_all())
 
-    # mp = MeasurementParams()
-    # comm.sendMeasurementBegin(mp)
+    comm.sendCode("*X",-12345)
+    while comm.arduino.in_waiting < 4:
+        time.sleep(0)
+    print(comm.arduino.read_all())
 
-    # time.sleep(4)
-    # comm.sendCode("*S", 12345)
-
-    # time.sleep(TIMEOUT)
-    # comm.sendCode("*X", 12345)
-
-    # time.sleep(TIMEOUT)
-    # comm.sendCode("*X",-12345)
-
-    # time.sleep(TIMEOUT)
-    # comm.sendCode("*X", 12321)
+    comm.sendCode("*X", 12321)
+    while comm.arduino.in_waiting < 4:
+        time.sleep(0)
+    print(comm.arduino.read_all())
     
-    # # time.sleep(TIMEOUT)
-    # # sendMeasurementBegin()
+    print(comm.getRawADCReading())
 
-    # # time.sleep(TIMEOUT)
-    # # sendMeasurementBegin()
+    comm.sendMeasurementBegin(mp)
+    while comm.arduino.in_waiting < 1:
+        time.sleep(0)
+    print(comm.arduino.read_all())
+
+    comm.sendMeasurementBegin(mp)
+    while comm.arduino.in_waiting < 1:
+        time.sleep(0)
+    print(comm.arduino.read_all())
+
+
+
+if __name__ == '__main__':
+    while comm.readCommand() != b'R':
+        time.sleep(0)
+    #comm.arduino.flush()
+
+    for i in range(10):
+        print("iteration " + str(i))
+        testSequence()
+
 
     kill = False
     x = Thread(target=monitor, args=()).start()
 
-    time.sleep(1.2)
+    time.sleep(1.5)
     kill = True
     sys.exit()
 

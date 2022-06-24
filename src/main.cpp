@@ -40,6 +40,8 @@ char command;
 
         
 void setup(void){
+  pinMode(LED_BUILTIN, OUTPUT);
+
   Serial.begin(2000000);
   comm = Communicator::getInstance();
 
@@ -52,43 +54,48 @@ void setup(void){
 
   indenter = MeasurementController::getInstance();
   indenter->setUpController(adc, zAxisPWM);
-  
-  pinMode(LED_BUILTIN, OUTPUT);
+
+  comm->sendCommand('R');
 }
 
 
-
+uint32_t lastBlink =0;
 void loop(void){
   command = comm->getCommand();
-  Serial.print(command);
   switch(command){
     case 'S':
       // TODO: Emergency stop	and send e-stop complete
-      indenter->emergencyStop();;
+      indenter->emergencyStop();
+      Serial.print("S: "); Serial.println(comm->getInt());
       break;
     case 'X':
       // TODO: move X axis
-      Serial.print("got code X with int: "); Serial.println(comm->getInt());
+      Serial.print("X: "); Serial.println(comm->getInt());
       break;
     case 'Y':
       // TODO: move Y axis	
+      Serial.print("Y: "); Serial.println(comm->getInt());
       break;
     case 'Z':	
       // TODO: move Z axis
+      Serial.print("Z: "); Serial.println(comm->getInt());
       break;
     case 'B':
-      indenter->performMeasurement(comm->receiveMeasurementParams());
+      Serial.print("B");
+      comm->receiveMeasurementParams();
+      //indenter->performMeasurement(comm->receiveMeasurementParams());
       break;
     case 'M': // request for raw measurement
-      //int num = comm->getInt();
-      comm->sendCommand('M', 1234);
+      comm->sendCommand('M', comm->getInt()+1);
     case 'E':
       // TODO: handle error
       break;
     default:
       // TODO: send an error code here
-      digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-      delay(100);
+      if(millis() > lastBlink + 100){
+        digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+        lastBlink = millis();
+      }
       break;
   }
 

@@ -23,7 +23,6 @@ Communicator* Communicator::getInstance(){
 
 
 Communicator::Communicator(){
-  Serial.println("ctor");
 	Serial.flush();
 }
 
@@ -56,12 +55,8 @@ void Communicator::sendCommand(char command){
 MeasurementParams Communicator::receiveMeasurementParams(){
 	paramAdapter pa;
 
-	while(Serial.available() < sizeof(MeasurementParams)){ 				//TODO: add timeout to waiting
-    Serial.println("waiting for all params to arrive");
-	}
+	while(Serial.available() < sizeof(MeasurementParams)); 				//TODO: add timeout to waiting
 	Serial.readBytes(pa.paramArray, sizeof(MeasurementParams));
-
-  Serial.print("remaining bytes available: "); Serial.println(Serial.available());
 
 	return pa.parameters;
 }
@@ -82,9 +77,10 @@ int16_t Communicator::getInt(){
 
 char Communicator::getCommand(){
   // make sure we have the asterisk and following command letter
-  if(Serial.available() >= 2 && Serial.find('*')){
-    return Serial.read(); // return the letter after the asterisk
-	}
+  if(Serial.available()>=2){
+    while(Serial.available() >= 2 && Serial.read() != '*'); 
+    return Serial.read();
+  }
 
 	return 'N';
 }
