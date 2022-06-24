@@ -21,11 +21,8 @@ ADCController::ADCController(uint8_t interruptPin, Adafruit_ADS1115 &ads){
   
   this->ads->setGain(GAIN_TWOTHIRDS);                          //TODO: change this!
   this->ads->setDataRate(RATE_ADS1115_860SPS);
-  
   // make sure the ADC is not running
   stopADC();
-
-  scaler = 0; //TODO: code to calculate/set the scaler
 }
 
 
@@ -67,3 +64,8 @@ void ADCController::setScaleFactor(double scaleFactor){
 double ADCController::getLoad(){
   return (ads->getLastConversionResults() - offset) * scaler;
 }
+
+int16_t  ADCController::getRawReading(){
+  return ads->readADC_Differential_0_1();
+}
+

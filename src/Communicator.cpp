@@ -10,6 +10,7 @@
 	*B<double><uint 8><uint8><uint 8><uint 8><uint 16><uint 16><uint 16>				- begin measurement (calibration factor, preload, preload time, max load, max load time, step delay, hold step down delay, hold step up delay)
 	*P<uint 32><double><uint 8> - data point (displacement, load, phase)
 	*C					    - complete
+  *M<int 16>      - measure load
   *N              - no command
 
 */
@@ -37,6 +38,21 @@ void Communicator::sendDataEnd(){
 }
 
 
+void Communicator::sendCommand(char command, int16_t data){
+  uint8_t dataArray[4];
+  dataArray[0] = '*';
+  dataArray[1] = command;
+  dataArray[2] = data;
+  dataArray[3] = data >> 8;
+  Serial.write(dataArray, 4);
+}
+
+
+void Communicator::sendCommand(char command){
+  sendCommand(command, 0000);
+}
+
+
 MeasurementParams Communicator::receiveMeasurementParams(){
 	paramAdapter pa;
 
@@ -55,7 +71,7 @@ int16_t Communicator::getInt(){
   int16_t num = 0;
   //wait for bytes to arrive
 	while(Serial.available() < sizeof(uint16_t)){ 				//TODO: add timeout to waiting
-    Serial.print ("waiting for bytes");
+    delay(1);
 	}
   
   num |= (uint16_t)Serial.read();

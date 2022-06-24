@@ -35,7 +35,7 @@
       static PWMStepperController *zAxis;
       static MeasurementParams params;
       static uint8_t stage;
-      static bool measurementOngoing;
+      static bool dataReady;
 
       MeasurementController();
 

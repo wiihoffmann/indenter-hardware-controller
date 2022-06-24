@@ -30,6 +30,7 @@
       double getLoad();
       void startADC(void (*func)());
       void stopADC();
+      int16_t getRawReading();
   };
 
 #endif

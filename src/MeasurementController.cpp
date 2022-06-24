@@ -8,38 +8,7 @@ ADCController *MeasurementController::adc;
 PWMStepperController *MeasurementController::zAxis;
 MeasurementParams MeasurementController::params;
 uint8_t MeasurementController::stage;
-bool MeasurementController::measurementOngoing;
-
-
-void MeasurementController::DataReadyHandler(){
-  switch(stage){
-    case 0: // initial approach
-      Serial.println("stage 0");
-      stage ++;
-      break;
-    case 1: // preload hold
-      Serial.println("stage 1");
-      stage ++;
-      break;
-    case 2: // main load approach
-      Serial.println("stage 2");
-      stage ++;      
-      break;
-    case 3: // main load hold
-      Serial.println("stage 3");
-      stage ++;      
-      break;
-    case 4: // retract
-      Serial.println("stage 4"); 
-      measurementOngoing = false;
-      Serial.println(measurementOngoing);
-      break;
-    default:
-      // emergency stop
-      break;
-  }
-  return;
-}
+bool MeasurementController::dataReady;
 
 
 MeasurementController* MeasurementController::getInstance(){
@@ -66,42 +35,94 @@ void MeasurementController::emergencyStop(){
 
 }
 
-void nothing(){
-  delay(1); 
-}
 
 void MeasurementController::performMeasurement(MeasurementParams parameters){
-  Serial.println("in performMeasurement");
   params = parameters;
   stage = 0;
-  measurementOngoing = true;
-  //zAxis->resetDisplacement();
-  
-  adc->startADC(DataReadyHandler);
-  // delay(50);
-  // adc->stopADC();
-
+  dataReady = false;
   Communicator *comm = Communicator::getInstance();
-  while(measurementOngoing != false){
+
+  // Serial.println(params.calFactor);
+  // Serial.println(params.preload);
+  // Serial.println(params.preloadTime);
+  // Serial.println(params.maxLoad);
+  // Serial.println(params.maxLoadTime);
+  // Serial.println(params.stepDelay);
+  // Serial.println(params.holdDownDelay);
+  // Serial.println(params.holdUpDelay);
+
+  zAxis->resetDisplacement();
+  adc->tare();
+  adc->setScaleFactor(params.calFactor);
+  adc->startADC([](){dataReady = true;});
+
+  bool doneMeasurement = false;
+  uint32_t samples = 0;
+  uint32_t start = micros();
+  while(!doneMeasurement){
     char command = comm->getCommand();
-    if (command == 'S' || command == 'E'){
-      // do something here
+    if(dataReady){
+      dataReady = false;
+      samples ++;
+
+      adc->stopADC();
+      Serial.println("Stopped!");
+      doneMeasurement = true;
+
+      switch(stage){
+        case 0: // initial approach
+          comm->sendDataPoint(zAxis->getDisplacement(), adc->getLoad(), stage);
+
+          if(zAxis->getDisplacement() >= 1500){ // replace with load stuff
+            zAxis->stopMoving();
+            stage ++;
+            
+          }
+          else if(zAxis->getDirection() == 0){
+            zAxis->startMovingDown(params.stepDelay);
+            Serial.println("stage 0");
+          }
+          break;
+        case 1: // preload hold
+          Serial.println("stage 1");
+          stage ++;
+          break;
+        case 2: // main load approach
+          Serial.println("stage 2");
+          stage ++;      
+          break;
+        case 3: // main load hold
+          Serial.println("stage 3");
+          stage ++;      
+          break;
+        case 4: // retract
+          Serial.println("stage 4");
+          
+          Serial.print("stopping adc... ");
+          adc->stopADC();
+          Serial.println("Stopped!");
+          doneMeasurement = true;
+          break;
+      }
     }
-    delay(1);
+    else if (command != 'N'){
+      Serial.print("Got char: "); Serial.println(command);
+      doneMeasurement = true;
+      adc->stopADC();
+      Serial.println("e-stopping!");
+      return;
+    }
+
+
+    // benchmarking function
+    if(micros() - start >= 1000000){
+      Serial.print("samples last second: "); Serial.println(samples);
+      samples = 0;
+      start = micros();
+    }
+
   }
 
-  Serial.print("stopping adc... ");
-  adc->stopADC();
-  Serial.println("Stopped!");
-
-  Serial.println(params.calFactor);
-  Serial.println(params.preload);
-  Serial.println(params.preloadTime);
-  Serial.println(params.maxLoad);
-  Serial.println(params.maxLoadTime);
-  Serial.println(params.stepDelay);
-  Serial.println(params.holdDownDelay);
-  Serial.println(params.holdUpDelay);
 
 }
 

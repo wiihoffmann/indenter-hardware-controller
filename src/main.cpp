@@ -8,7 +8,6 @@
 Adafruit_ADS1115 ads; /* Use this for the 16-bit version */
 // Adafruit_ADS1015 ads;     /* Use this for the 12-bit version */
 
-
 BasicStepperController *xAxis;
 BasicStepperController *yAxis;
 BasicStepperController *zAxis;
@@ -18,29 +17,26 @@ ADCController *adc;
 MeasurementController *indenter;
 Communicator *comm;
 
+char command;
 
-bool ready = false;
-double displacement = 0;
+// uint32_t time;
+// uint32_t realtime = 0;
+// int16_t samples = 0;
+// void benchmark(){
+//   realtime = (micros() - time);
+//   if(realtime >= 1000000){
+//     Serial.println();
+//     Serial.print("Samples per second: "); Serial.println(samples/(realtime/1000000.0));
+//     Serial.print("Samples: "); Serial.println(samples);
+//     Serial.print("Real time: "); Serial.println(realtime);
+//     Serial.print("Steps: "); Serial.println(zAxisPWM->getDisplacement());
 
+//     samples = 0;
+//     realtime = 0;
 
-uint32_t time;
-uint32_t realtime = 0;
-int16_t samples = 0;
-void benchmark(){
-  realtime = (micros() - time);
-  if(realtime >= 1000000){
-    Serial.println();
-    Serial.print("Samples per second: "); Serial.println(samples/(realtime/1000000.0));
-    Serial.print("Samples: "); Serial.println(samples);
-    Serial.print("Real time: "); Serial.println(realtime);
-    Serial.print("Steps: "); Serial.println(zAxisPWM->getDisplacement());
-
-    samples = 0;
-    realtime = 0;
-
-    time = micros();
-  }
-}
+//     time = micros();
+//   }
+// }
 
         
 void setup(void){
@@ -53,30 +49,22 @@ void setup(void){
   zAxisPWM = new PWMStepperController(9, 8, true);
 
   adc = new ADCController(2, ads);
-  adc->setInterruptFunc([](){ready = true;});
 
   indenter = MeasurementController::getInstance();
   indenter->setUpController(adc, zAxisPWM);
   
-  
-  Serial.println("setup complete");
   pinMode(LED_BUILTIN, OUTPUT);
 }
 
 
-char command;
+
 void loop(void){
-
-  // if(zAxisPWM->getDisplacement() > 3000) zAxisPWM->startMovingUp(1200);
-  // else if(zAxisPWM->getDisplacement() <= 200) zAxisPWM->startMovingDown(1200);
-
-  //Serial.print("Differential: "); Serial.print(results); Serial.print("("); Serial.print(ads.computeVolts(results), 4); Serial.println("V)");
-
   command = comm->getCommand();
+  Serial.print(command);
   switch(command){
     case 'S':
       // TODO: Emergency stop	and send e-stop complete
-      indenter->emergencyStop();
+      indenter->emergencyStop();;
       break;
     case 'X':
       // TODO: move X axis
@@ -89,11 +77,11 @@ void loop(void){
       // TODO: move Z axis
       break;
     case 'B':
-      // TODO: begin measurement
-      Serial.println("starting measurement");
       indenter->performMeasurement(comm->receiveMeasurementParams());
-      Serial.println("done starting");
       break;
+    case 'M': // request for raw measurement
+      //int num = comm->getInt();
+      comm->sendCommand('M', 1234);
     case 'E':
       // TODO: handle error
       break;
@@ -105,17 +93,3 @@ void loop(void){
   }
 
 }
-
-
-
-
-  // xAxis->moveDown(200);
-  // yAxis->moveDown(400);
-
-  // if(ready){
-  //   ready = false;
-  //   samples ++;
-  // }
-
-
-  // benchmark();
