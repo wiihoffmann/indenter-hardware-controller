@@ -71,7 +71,6 @@ void MeasurementController::performMeasurement(MeasurementParams parameters){
 
       if(millis()-start >= 1000){
         adc->stopADC();
-        Serial.println("complete!");
         doneMeasurement = true;
       }     
 
@@ -84,18 +83,9 @@ void MeasurementController::performMeasurement(MeasurementParams parameters){
       //return;
     }
 
-
-    // // benchmarking function
-    // if(micros() - start >= 1000000){
-    //   Serial.print("samples last second: "); Serial.println(samples);
-    //   samples = 0;
-    //   start = micros();
-    // }
-
   }
 
   comm->sendCommand('C');
-
 }
 
 

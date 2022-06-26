@@ -27,8 +27,8 @@ def performMeasurement(params):
     # process data until we see the complete flag
     while command != 'C':
         if command != 'D':
-            print("Error: exptected command 'D' but got '" + command + "'")
-            print(point)
+            print("Error: exptected command D but got " + command)
+            print("point before the error: " + str(point))
         else:
             point = comm.readDataPoint()
             # TODO: process the data point

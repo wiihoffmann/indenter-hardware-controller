@@ -13,9 +13,9 @@ ADCController::ADCController(uint8_t interruptPin, Adafruit_ADS1115 &ads){
   if (!this->ads->begin()){
     while (1){
       digitalWrite(LED_BUILTIN, HIGH);
-      delay(100);
+      delay(1000);
       digitalWrite(LED_BUILTIN, LOW);
-      delay(100);
+      delay(1000);
     }
   }
   

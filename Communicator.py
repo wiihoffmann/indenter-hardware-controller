@@ -22,7 +22,7 @@ class MeasurementParams:
 class Communicator:
 
     def __init__(self):
-        self.arduino = serial.Serial(port='/dev/ttyACM1', baudrate=2000000, timeout=None)
+        self.arduino = serial.Serial(port='COM3', baudrate=2000000, timeout=None)
         self.arduino.flush()
 
 
@@ -45,11 +45,14 @@ class Communicator:
         while not self.commandAvailable():
             time.sleep(0)
         
-        if self.arduino.read_until(b'*', self.arduino.in_waiting):
+        numBytesWaiting = self.arduino.in_waiting
+        readBytes = self.arduino.read_until(b'*', numBytesWaiting)
+        if len(readBytes) < numBytesWaiting:
             return self.arduino.read().decode('utf-8')
         
-        print("trying again")
-        self.readCommand()
+        print("ERROR: trying to read command again!")
+        print("Discarded bytes: " + str(readBytes))
+        return(self.readCommand())
 
 
     def readInt(self):
