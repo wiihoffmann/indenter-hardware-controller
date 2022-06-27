@@ -16,18 +16,18 @@ class MeasurementParams:
     stepDelay = 700                 #     uint16_t stepDelay;
     holdDownDelay = 7               #     uint16_t holdDownDelay;
     holdUpDelay = 8                 #     uint16_t holdUpDelay;
-
-
+    eStopStepDelay = 700            #     uint16_t eStopStepDelay;
+    targetTolerance = 2.5           #     double targetTolerance;
 
 class Communicator:
 
     def __init__(self):
-        self.arduino = serial.Serial(port='COM3', baudrate=2000000, timeout=None)
+        self.arduino = serial.Serial(port='/dev/ttyACM1', baudrate=2000000, timeout=None)
         self.arduino.flush()
 
 
     def sendMeasurementBegin(self, params):
-        dataToSend = pack("<%dsfBBBBHHH" % (len(params.preamble)), params.preamble, params.calFactor, params.preload, params.preloadTime, params.maxLoad, params.maxLoadTime, params.stepDelay, params.holdDownDelay, params.holdUpDelay)
+        dataToSend = pack("<%dsfBBBBHHHHf" % (len(params.preamble)), params.preamble, params.calFactor, params.preload, params.preloadTime, params.maxLoad, params.maxLoadTime, params.stepDelay, params.holdDownDelay, params.holdUpDelay, params.eStopStepDelay, params.targetTolerance)
         self.arduino.write(dataToSend)
 
 

@@ -70,7 +70,7 @@ if __name__ == '__main__':
         time.sleep(0)
     #comm.arduino.flush()
 
-    for i in range(50):
+    for i in range(3):
         print("iteration " + str(i))
         testSequence()
 

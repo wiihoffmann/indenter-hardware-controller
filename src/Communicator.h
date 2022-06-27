@@ -23,7 +23,7 @@
 
 			static Communicator* getInstance();
 
-			void sendDataPoint(uint32_t displacement, float load, uint8_t measurementStage);
+			void sendDataPoint(int32_t displacement, float load, uint8_t measurementStage);
 			void sendDataEnd();
 			char getCommand();
 			void sendCommand(char command, int16_t data);

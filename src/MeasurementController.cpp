@@ -6,9 +6,9 @@
 
 ADCController *MeasurementController::adc;
 PWMStepperController *MeasurementController::zAxis;
-MeasurementParams MeasurementController::params;
-uint8_t MeasurementController::stage;
+bool MeasurementController::doneMeasurement;
 bool MeasurementController::dataReady;
+uint32_t MeasurementController::holdStartTime;
 
 
 MeasurementController* MeasurementController::getInstance(){
@@ -18,9 +18,7 @@ MeasurementController* MeasurementController::getInstance(){
 
 
 MeasurementController::MeasurementController(){
-  //measurementOngoing = false;
   Serial.flush();
-  Serial.println("ctor");
 }
 
 
@@ -30,60 +28,112 @@ void MeasurementController::setUpController(ADCController *adc, PWMStepperContro
 }
 
 
-void MeasurementController::emergencyStop(){
-  
-
+void MeasurementController::emergencyStop(uint16_t stepDelay){
+  doneMeasurement = true;
+  adc->stopADC();
+  zAxis->emergencyStop(stepDelay);
 }
 
 
-void MeasurementController::performMeasurement(MeasurementParams parameters){
-  params = parameters;
-  stage = 0;
-  dataReady = false;
+void MeasurementController::applyLoad(uint8_t targetload, uint16_t stepDelay, double loadActual, uint8_t *stage){
+  if(zAxis->getDirection() != 1) zAxis->startMovingDown(stepDelay);
+  if(loadActual >= targetload){
+    zAxis->stopMoving();
+    stage ++;
+  }
+}
+
+
+void MeasurementController::holdLoad(uint8_t targetload, double tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint8_t holdTime, double loadActual, uint8_t *stage){
+  if(holdStartTime == 0) holdStartTime = millis();
+
+  // if the load is above the upper limit and we are not already moving up -> move up;
+  if(loadActual > tolerance + targetload && zAxis->getDirection() != 1) zAxis->startMovingUp(holdUpDelay);
+  // if the load is below the lower limit and we are not already moving down -> move down;
+  else if(loadActual < (double)targetload - tolerance && zAxis->getDirection() != -1) zAxis->startMovingDown(holdDownDelay);
+  // else we are within the tolerances -> do nothing
+  else zAxis->stopMoving();
+
+  if(millis() - holdStartTime >= holdTime * 1000){
+    zAxis->stopMoving();
+    holdStartTime = 0;
+    stage ++;
+  }
+}
+
+
+void MeasurementController::removeLoad(uint16_t stepDelay, uint8_t *stage){
+  if(zAxis->getDirection() != -1 && zAxis->getDisplacement() > 0) zAxis->startMovingUp(stepDelay);
+  if(zAxis->getDisplacement <= 0){
+    zAxis->stopMoving();
+    stage ++;
+  }
+}
+
+
+void MeasurementController::performMeasurement(MeasurementParams params){
+  uint8_t stage = 0;
+  double load;
   Communicator *comm = Communicator::getInstance();
-
-
-  // Serial.println(params.calFactor);
-  // Serial.println(params.preload);
-  // Serial.println(params.preloadTime);
-  // Serial.println(params.maxLoad);
-  // Serial.println(params.maxLoadTime);
-  // Serial.println(params.stepDelay);
-  // Serial.println(params.holdDownDelay);
-  // Serial.println(params.holdUpDelay);
-
 
   zAxis->resetDisplacement();
   adc->tare();
   adc->setScaleFactor(params.calFactor);
   adc->startADC([](){dataReady = true;});
 
-  bool doneMeasurement = false;
+
   uint32_t samples = 0;
   uint32_t start = millis();
+
+  holdStartTime = 0;
+  doneMeasurement = false;
   while(!doneMeasurement){
     char command = comm->getCommand();
+    
+    if (command != 'N'){
+      adc->stopADC();
+      doneMeasurement = true;
+      emergencyStop(params.eStopStepDelay);
+    }
+    
     if(dataReady){
       dataReady = false;
+      load = adc->getLoad();
+      comm->sendDataPoint(zAxis->getDisplacement(), load, stage);      
+
       samples ++;
 
-      comm->sendDataPoint(samples, millis()-start, 3);
+      switch(stage){
+        case 0: // initial approach
+          applyLoad(params.preload, params.stepDelay, load, &stage);
+          break;
+        case 1: // preload hold
+          holdLoad(params.preload, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.preloadTime, load, &stage);
+          break;
+        case 2: // main load approach
+          applyLoad(params.maxLoad, params.stepDelay, load, &stage);     
+          break;
+        case 3: // main load hold
+          holdLoad(params.maxLoad, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.maxLoadTime, load, &stage);   
+          break;
+        case 4: // retract
+          removeLoad(params.stepDelay, &stage);
+          break;
+        case 5: //done
+          adc->stopADC();
+          doneMeasurement = true;
+          break;
+      }
 
-      if(millis()-start >= 1000){
-        adc->stopADC();
+      if(millis() - start >= 1000){
         doneMeasurement = true;
-      }     
-
+      }
 
     }
-    else if (command != 'N'){
-      Serial.print("Got char: "); Serial.println(command);
-      // doneMeasurement = true;
-      // adc->stopADC();
-      //return;
-    }
-
   }
+
+  comm->sendDataPoint(samples, millis()-start, 99);
+  adc->stopADC();
 
   comm->sendCommand('C');
 }
@@ -91,44 +141,18 @@ void MeasurementController::performMeasurement(MeasurementParams parameters){
 
 
 
+// comm->sendCommand('C');
+// Serial.println(params.calFactor);
+// Serial.println(params.preload);
+// Serial.println(params.preloadTime);
+// Serial.println(params.maxLoad);
+// Serial.println(params.maxLoadTime);
+// Serial.println(params.stepDelay);
+// Serial.println(params.holdDownDelay);
+// Serial.println(params.holdUpDelay);
+// Serial.println(params.eStopStepDelay);
+// Serial.println(params.targetTolerance);
 
 
 
-
-
-      // switch(stage){
-      //   case 0: // initial approach
-      //     comm->sendDataPoint(zAxis->getDisplacement(), adc->getLoad(), stage);
-
-      //     if(zAxis->getDisplacement() >= 1500){ // replace with load stuff
-      //       zAxis->stopMoving();
-      //       stage ++;
-            
-      //     }
-      //     else if(zAxis->getDirection() == 0){
-      //       zAxis->startMovingDown(params.stepDelay);
-      //       //Serial.println("stage 0");
-      //     }
-      //     break;
-      //   case 1: // preload hold
-      //     //Serial.println("stage 1");
-      //     stage ++;
-      //     break;
-      //   case 2: // main load approach
-      //     //Serial.println("stage 2");
-      //     stage ++;      
-      //     break;
-      //   case 3: // main load hold
-      //     //Serial.println("stage 3");
-      //     stage ++;      
-      //     break;
-      //   case 4: // retract
-      //     //Serial.println("stage 4");
-          
-      //     //Serial.print("stopping adc... ");
-      //     adc->stopADC();
-      //     //Serial.println("Stopped!");
-      //     doneMeasurement = true;
-      //     break;
-      // }
 

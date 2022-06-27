@@ -26,7 +26,7 @@
       void startMovingUp(uint16_t stepDelay);
       void startMovingDown(uint16_t stepDelay);
       void stopMoving();
-      static uint32_t getDisplacement();
+      static int32_t getDisplacement();
       static void resetDisplacement();
       static uint8_t getDirection();
       void emergencyStop(uint16_t stepDelay);

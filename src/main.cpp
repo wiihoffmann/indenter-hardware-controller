@@ -65,29 +65,36 @@ void loop(void){
   switch(command){
     case 'S':
       // TODO: Emergency stop	and send e-stop complete
-      indenter->emergencyStop();
+      indenter->emergencyStop(comm->getInt());
       Serial.print("S: "); Serial.println(comm->getInt());
       break;
+    
     case 'X':
       // TODO: move X axis
       Serial.print("X: "); Serial.println(comm->getInt());
       break;
+    
     case 'Y':
       // TODO: move Y axis	
       Serial.print("Y: "); Serial.println(comm->getInt());
       break;
+    
     case 'Z':	
       // TODO: move Z axis
       Serial.print("Z: "); Serial.println(comm->getInt());
       break;
+    
     case 'B':
       indenter->performMeasurement(comm->receiveMeasurementParams());
       break;
+    
     case 'M': // request for raw measurement
       comm->sendCommand('M', adc->getRawReading());
+    
     case 'E':
       // TODO: handle error
       break;
+    
     default:
       // TODO: send an error code here
       if(millis() > lastBlink + 100){

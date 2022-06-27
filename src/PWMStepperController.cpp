@@ -50,7 +50,7 @@ void PWMStepperController::stopMoving(){
 }
 
 
-uint32_t PWMStepperController::getDisplacement(){
+int32_t PWMStepperController::getDisplacement(){
   return displacement;
 }
 
