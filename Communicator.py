@@ -9,15 +9,15 @@ from struct import *
 class MeasurementParams:
     preamble = bytes("*B", 'utf-8') #     start measurement
     calFactor = 1                   #     double calFactor;
-    preload = 2                     #     uint8_t preload;
-    preloadTime = 3                 #     uint8_t preloadTime;
-    maxLoad = 4                     #     uint8_t maxLoad;
-    maxLoadTime = 5                 #     uint8_t maxLoadTime;
+    preload = 300                     #     uint16_t preload;
+    preloadTime = 2                 #     uint8_t preloadTime;
+    maxLoad = 1000                     #     uint16_t maxLoad;
+    maxLoadTime = 2                #     uint8_t maxLoadTime;
     stepDelay = 700                 #     uint16_t stepDelay;
-    holdDownDelay = 7               #     uint16_t holdDownDelay;
-    holdUpDelay = 8                 #     uint16_t holdUpDelay;
+    holdDownDelay = 700               #     uint16_t holdDownDelay;
+    holdUpDelay = 800                 #     uint16_t holdUpDelay;
     eStopStepDelay = 700            #     uint16_t eStopStepDelay;
-    targetTolerance = 2.5           #     double targetTolerance;
+    tolerance = 50           #     uint16_t targetTolerance;
 
 class Communicator:
 
@@ -27,7 +27,7 @@ class Communicator:
 
 
     def sendMeasurementBegin(self, params):
-        dataToSend = pack("<%dsfBBBBHHHHf" % (len(params.preamble)), params.preamble, params.calFactor, params.preload, params.preloadTime, params.maxLoad, params.maxLoadTime, params.stepDelay, params.holdDownDelay, params.holdUpDelay, params.eStopStepDelay, params.targetTolerance)
+        dataToSend = pack("<%dsHBHBHHHHH" % (len(params.preamble)), params.preamble, params.preload, params.preloadTime, params.maxLoad, params.maxLoadTime, params.stepDelay, params.holdDownDelay, params.holdUpDelay, params.eStopStepDelay, params.tolerance)
         self.arduino.write(dataToSend)
 
 
@@ -66,8 +66,9 @@ class Communicator:
         while self.arduino.in_waiting < 9:
             time.sleep(0)
 
-        data = unpack("<ifB", self.arduino.read(9))
+        data = unpack("<ihB", self.arduino.read(7))
         return data
+
 
     def getRawADCReading(self):      
         # request raw ADC value and wait for reply

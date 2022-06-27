@@ -7,7 +7,7 @@
 	*X<int 16> 			- x-axis move at step delay given by <int 16> - 0=stop - pos/neg sets direction
 	*Y<int 16> 			- y-axis move at step delay given by <int 16>
 	*Z<int 16>			- z-axis move at step delay given by <int 16>
-	*B<double><uint 8><uint8><uint 8><uint 8><uint 16><uint 16><uint 16><uint 16><double>				- begin measurement (calibration factor, preload, preload time, max load, max load time, step delay, hold step down delay, hold step up delay, e-stop step delay, hold load tolerance)
+	*B<double><uint 16><uint16><uint 16><uint 16><uint 16><uint 16><uint 16><uint 16><double>				- begin measurement (calibration factor, preload, preload time, max load, max load time, step delay, hold step down delay, hold step up delay, e-stop step delay, hold load tolerance)
 	*D<int 32><double><uint 8> - data point (displacement, load, phase)
 	*C					    - complete
   *M<int 16>      - measure load
@@ -27,7 +27,7 @@ Communicator::Communicator(){
 }
 
 
-void Communicator::sendDataPoint(int32_t displacement, float load, uint8_t measurementStage){
+void Communicator::sendDataPoint(int32_t displacement, int16_t load, uint8_t measurementStage){
   dataPointAdapter dp;
   dp.point.displacement = displacement;
   dp.point.load = load;

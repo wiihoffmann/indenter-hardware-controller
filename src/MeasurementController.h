@@ -7,22 +7,21 @@
 
 
   struct MeasurementParams{
-    double calFactor;
-    uint8_t preload;
+    uint16_t preload;
     uint8_t preloadTime;
-    uint8_t maxLoad;
+    uint16_t maxLoad;
     uint8_t maxLoadTime;
     uint16_t stepDelay;
     uint16_t holdDownDelay;
     uint16_t holdUpDelay;
     uint16_t eStopStepDelay;
-    double tolerance;
+    uint16_t tolerance;
   };
 
 
   struct DataPoint{
     int32_t displacement;
-    double load;
+    int16_t load;
     uint8_t stage;
   };
 
@@ -47,9 +46,9 @@
       static uint32_t holdStartTime;
 
       MeasurementController();
-      static void applyLoad(uint8_t targetload, uint16_t stepDelay, double loadActual, uint8_t *stage);
-      static void holdLoad(uint8_t targetload, double tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint8_t holdTime, double loadActual, uint8_t *stage);
-      static void removeLoad(uint16_t stepDelay, uint8_t *stage);
+      static void applyLoad(uint16_t targetload, uint16_t stepDelay, int16_t loadActual, uint8_t &stage);
+      static void holdLoad(uint16_t targetload, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint8_t holdTime, int16_t loadActual, uint8_t &stage);
+      static void removeLoad(uint16_t stepDelay, uint8_t &stage);
   };
 
 #endif

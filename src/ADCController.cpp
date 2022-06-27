@@ -56,13 +56,8 @@ void ADCController::tare(){
 }
 
 
-void ADCController::setScaleFactor(double scaleFactor){
-  scaler = scaleFactor;
-}
-
-
 double ADCController::getLoad(){
-  return (ads->getLastConversionResults() - offset) * scaler;
+  return (ads->getLastConversionResults() - offset);
 }
 
 int16_t  ADCController::getRawReading(){

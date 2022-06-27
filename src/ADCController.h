@@ -19,14 +19,12 @@
       uint8_t interruptPin;
       int16_t reading;
       int16_t offset;
-      double scaler;
       Adafruit_ADS1X15 *ads;
       
     public:
       ADCController(uint8_t interruptPin, Adafruit_ADS1115 &ads);
       void setInterruptFunc(void (*func)());
       void tare();
-      void setScaleFactor(double scaleFactor);
       double getLoad();
       void startADC(void (*func)());
       void stopADC();

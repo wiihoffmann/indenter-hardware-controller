@@ -31,11 +31,13 @@ def performMeasurement(params):
             print("point before the error: " + str(point))
         else:
             point = comm.readDataPoint()
+            print(point)
             # TODO: process the data point
 
         command = comm.readCommand()
     
     print(point)
+    print(point[0]/point[1]*1000)
 
 
 def testSequence():
