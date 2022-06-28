@@ -15,6 +15,9 @@
 
 */
 
+char Communicator::validCommands[] = {'E','S','X','Y','Z','B','D','C','M','N'};
+
+
 Communicator* Communicator::getInstance(){
   static Communicator instance; // Guaranteed to be destroyed.
                                 // Instantiated on first use.
@@ -78,12 +81,27 @@ int16_t Communicator::getInt(){
 
 
 char Communicator::getCommand(){
-  // make sure we have the asterisk and following command letter
-  if(Serial.available()>=2){
-    while(Serial.available() >= 2 && Serial.read() != '*'); 
-    return Serial.read();
-  }
+  char command;
+  bool foundAsterisk = false;
 
+  // make sure we have the asterisk and following command letter
+  if(Serial.available() >= 2){
+    while(Serial.available() >= 2 && !foundAsterisk){
+      if(Serial.read() == '*') foundAsterisk = true;
+    }
+
+    command = Serial.read();
+    for(uint8_t i=0; i < sizeof(validCommands); i++){
+      if(validCommands[i] == command){
+        return command;
+      } 
+    }
+
+    // if we found the asterisk and made it here, the command is invalid
+    if(foundAsterisk){
+      sendCommand('E', 0001);
+    }
+  }
 	return 'N';
 }
 

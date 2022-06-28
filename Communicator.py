@@ -18,16 +18,17 @@ class MeasurementParams:
     holdUpDelay = 800               #     uint16_t holdUpDelay;
     eStopStepDelay = 700            #     uint16_t eStopStepDelay;
     tolerance = 50                  #     uint16_t targetTolerance;
+    flipDirection = True            #     bool flip indenter direction
 
 class Communicator:
 
     def __init__(self):
-        self.arduino = serial.Serial(port='COM3', baudrate=2000000, timeout=None)
+        self.arduino = serial.Serial(port='/dev/ttyACM2', baudrate=2000000, timeout=None)
         self.arduino.flush()
 
 
     def sendMeasurementBegin(self, params):
-        dataToSend = pack("<%dshHhHHHHHH" % (len(params.preamble)), params.preamble, params.preload, params.preloadTime, params.maxLoad, params.maxLoadTime, params.stepDelay, params.holdDownDelay, params.holdUpDelay, params.eStopStepDelay, params.tolerance)
+        dataToSend = pack("<%dshHhHHHHHH?" % (len(params.preamble)), params.preamble, params.preload, params.preloadTime, params.maxLoad, params.maxLoadTime, params.stepDelay, params.holdDownDelay, params.holdUpDelay, params.eStopStepDelay, params.tolerance, params.flipDirection)
         self.arduino.write(dataToSend)
 
 

@@ -47,22 +47,22 @@ def testSequence():
     performMeasurement(mp)
     
  
-    # comm.sendCode("*S", 11111)
-    # while comm.arduino.in_waiting < 4:
-    #     time.sleep(0)
-    # print(comm.arduino.read_all())
+    comm.sendCode("*S", 22222)
+    print(comm.readCommand() + str(comm.readInt()))
 
-    # comm.sendCode("*X", 12345)
-    # while comm.arduino.in_waiting < 4:
-    #     time.sleep(0)
-    # print(comm.arduino.read_all())
-    
+    comm.sendCode("*X", 12345)
+    print(comm.readCommand() + str(comm.readInt()))
+
+    comm.sendCode("*Y", -12345)
+    print(comm.readCommand() + str(comm.readInt()))
+
+    comm.sendCode("*Z", 12321)
+    print(comm.readCommand() + str(comm.readInt()))
+
     # print("RAW: " + str(comm.getRawADCReading()))
 
-    # comm.sendMeasurementBegin(mp)
-    # while comm.arduino.in_waiting < 1:
-    #     time.sleep(0)
-    # print(comm.arduino.read_all())
+    time.sleep(5)
+
 
 
 
@@ -70,18 +70,18 @@ def testSequence():
 if __name__ == '__main__':
     while comm.readCommand() != 'R':
         time.sleep(0)
-    #comm.arduino.flush()
+    
 
-    for i in range(1):
+    for i in range(2):
         print("iteration " + str(i))
         testSequence()
 
 
     kill = False
     x = Thread(target=monitor, args=()).start()
-
     time.sleep(1.5)
     kill = True
+
     sys.exit()
 
 

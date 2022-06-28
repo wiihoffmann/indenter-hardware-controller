@@ -62,46 +62,48 @@ void setup(void){
 uint32_t lastBlink =0;
 void loop(void){
   command = comm->getCommand();
-  switch(command){
-    case 'S':
-      // TODO: Emergency stop	and send e-stop complete
-      indenter->emergencyStop(comm->getInt());
-      Serial.print("S: "); Serial.println(comm->getInt());
-      break;
-    
-    case 'X':
-      // TODO: move X axis
-      Serial.print("X: "); Serial.println(comm->getInt());
-      break;
-    
-    case 'Y':
-      // TODO: move Y axis	
-      Serial.print("Y: "); Serial.println(comm->getInt());
-      break;
-    
-    case 'Z':	
-      // TODO: move Z axis
-      Serial.print("Z: "); Serial.println(comm->getInt());
-      break;
-    
-    case 'B':
-      indenter->performMeasurement(comm->receiveMeasurementParams());
-      break;
-    
-    case 'M': // request for raw measurement
-      comm->sendCommand('M', adc->getRawReading());
-    
-    case 'E':
-      // TODO: handle error
-      break;
-    
-    default:
-      // TODO: send an error code here
-      if(millis() > lastBlink + 100){
-        digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-        lastBlink = millis();
-      }
-      break;
+  
+  if(command != 'N'){
+    switch(command){
+      case 'S': // E-stop. This command should only ever be seen while taking a measurement, not here.
+        // TODO: Emergency stop	and send e-stop complete
+        comm->sendCommand('S', comm->getInt());
+        break;
+      
+      case 'X': // move X axis
+        // TODO: move X axis
+        comm->sendCommand('X', comm->getInt());
+        break;
+      
+      case 'Y': // move the Y axis
+        // TODO: move Y axis	
+        comm->sendCommand('Y', comm->getInt());
+        break;
+      
+      case 'Z':	// move the Z axis
+        // TODO: move Z axis
+        comm->sendCommand('Z', comm->getInt());
+        break;
+      
+      case 'B': // begin a measurement
+        indenter->performMeasurement(comm->receiveMeasurementParams());
+        break;
+      
+      case 'M': // request for raw measurement
+        comm->sendCommand('M', adc->getRawReading());
+      
+      case 'E': // error code
+        // TODO: handle error
+        break;
+      
+      default: // unknown command -> error
+        //comm->sendCommand('E', 1337);
+        break;
+    }
   }
-
+  else if(millis() > lastBlink + 100){
+    digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+    lastBlink = millis();
+  }
 }
+

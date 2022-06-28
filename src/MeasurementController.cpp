@@ -124,10 +124,6 @@ void MeasurementController::performMeasurement(MeasurementParams params){
           doneMeasurement = true;
           break;
       }
-
-      // if(millis() - start >= 1000){
-      //   doneMeasurement = true;
-      // }
     }
   }
 
@@ -137,15 +133,16 @@ void MeasurementController::performMeasurement(MeasurementParams params){
 }
 
 
-// Serial.println(params.preload);
-// Serial.println(params.preloadTime);
-// Serial.println(params.maxLoad);
-// Serial.println(params.maxLoadTime);
-// Serial.println(params.stepDelay);
-// Serial.println(params.holdDownDelay);
-// Serial.println(params.holdUpDelay);
-// Serial.println(params.eStopStepDelay);
-// Serial.println(params.tolerance);
+  // Serial.println(params.preload);
+  // Serial.println(params.preloadTime);
+  // Serial.println(params.maxLoad);
+  // Serial.println(params.maxLoadTime);
+  // Serial.println(params.stepDelay);
+  // Serial.println(params.holdDownDelay);
+  // Serial.println(params.holdUpDelay);
+  // Serial.println(params.eStopStepDelay);
+  // Serial.println(params.tolerance);
+  // Serial.println(params.flipDirection);
 
 
 
