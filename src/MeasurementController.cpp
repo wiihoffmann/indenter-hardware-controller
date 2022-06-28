@@ -54,7 +54,7 @@ void MeasurementController::holdLoad(int16_t targetload, uint16_t tolerance, uin
   // else we are within the tolerances -> do nothing
   else zAxis->stopMoving();
 
-  if(millis() - holdStartTime >= holdTime * 1000){
+  if(millis() - holdStartTime >= holdTime){
     zAxis->stopMoving();
     holdStartTime = 0;
     stage ++;
@@ -78,7 +78,7 @@ void MeasurementController::performMeasurement(MeasurementParams params){
   char command;
   holdStartTime = 0;
   doneMeasurement = false;
-  
+
 
   zAxis->resetDisplacement();
   adc->tare();
@@ -87,8 +87,6 @@ void MeasurementController::performMeasurement(MeasurementParams params){
 
   uint32_t samples = 0;
   uint32_t start = millis();
-
-
   while(!doneMeasurement){
     command = comm->getCommand();
     
@@ -127,26 +125,15 @@ void MeasurementController::performMeasurement(MeasurementParams params){
           break;
       }
 
-      if(millis() - start >= 1000){
-        doneMeasurement = true;
-      }
-
+      // if(millis() - start >= 1000){
+      //   doneMeasurement = true;
+      // }
     }
   }
 
   comm->sendDataPoint(samples, millis()-start, 99);
   adc->stopADC();
   comm->sendCommand('C');
-
-  Serial.println(params.preload);
-Serial.println(params.preloadTime);
-Serial.println(params.maxLoad);
-Serial.println(params.maxLoadTime);
-Serial.println(params.stepDelay);
-Serial.println(params.holdDownDelay);
-Serial.println(params.holdUpDelay);
-Serial.println(params.eStopStepDelay);
-Serial.println(params.tolerance);
 }
 
 
