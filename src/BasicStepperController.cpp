@@ -5,6 +5,7 @@
 BasicStepperController::BasicStepperController(uint8_t stepPin, uint8_t dirPin, bool invertDirPin){
   this->stepPin = stepPin;
   this->dirPin = dirPin;
+  stepDelay = 0;
   stepCompensation = 0;
   lastToggleTime = micros();
   lastMoveCallTime = micros();

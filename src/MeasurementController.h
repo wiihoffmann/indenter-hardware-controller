@@ -35,13 +35,14 @@
 
       static MeasurementController* getInstance();
       static void DataReadyHandler();
-      static void setUpController(ADCController *adc, PWMStepperController *zAxis);
+      static void setUpController(ADCController *adc, PWMStepperController *zAxis, uint8_t eStopInterruptPin);
       static void performMeasurement(MeasurementParams params);
       static void emergencyStop(uint16_t stepDelay);
 
     private:
       static ADCController *adc;
       static PWMStepperController *zAxis;
+      static bool eStop;
       static bool dataReady;
       static bool doneMeasurement;
       static uint32_t holdStartTime;

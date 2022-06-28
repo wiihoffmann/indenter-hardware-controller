@@ -46,24 +46,15 @@ def testSequence():
 
     mp = MeasurementParams()
     performMeasurement(mp)
-    
- 
-    comm.sendCode("*S", 22222)
 
-    comm.sendCode("*X", 12345)
+    print("RAW: " + str(comm.getRawADCReading()))
 
-    comm.sendCode("*Y", -12345)
-
-    comm.sendCode("*Z", 12321)
-
-    # print("RAW: " + str(comm.getRawADCReading()))
-
-    time.sleep(5)
+    # time.sleep(5)
 
 
 def testSequence2():
     startTime = time.time()
-    while(time.time() - startTime < 10):
+    while(time.time() - startTime < 3):
         # comm.sendCode("*S", 200)
 
         comm.sendCode("*X", 300)
@@ -72,7 +63,7 @@ def testSequence2():
 
         comm.sendCode("*Z", 500)
 
-        time.sleep(.001)
+        time.sleep(.04)
 
 
 
@@ -81,10 +72,11 @@ if __name__ == '__main__':
         time.sleep(0)
     
 
-    # for i in range(1):
-    #     print("iteration " + str(i))
-    #     testSequence()
-    testSequence2()
+    for i in range(1):
+        print("iteration " + str(i))
+        # testSequence()
+        testSequence2()
+    
 
     kill = False
     x = Thread(target=monitor, args=()).start()

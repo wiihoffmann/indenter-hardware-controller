@@ -6,6 +6,7 @@
 
 ADCController *MeasurementController::adc;
 PWMStepperController *MeasurementController::zAxis;
+bool MeasurementController::eStop;
 bool MeasurementController::doneMeasurement;
 bool MeasurementController::dataReady;
 uint32_t MeasurementController::holdStartTime;
@@ -22,9 +23,11 @@ MeasurementController::MeasurementController(){
 }
 
 
-void MeasurementController::setUpController(ADCController *adc, PWMStepperController *zAxis){
+void MeasurementController::setUpController(ADCController *adc, PWMStepperController *zAxis, uint8_t eStopInterruptPin){
   MeasurementController::adc =  adc;
   MeasurementController::zAxis = zAxis;
+  pinMode(eStopInterruptPin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(eStopInterruptPin), [](){MeasurementController::eStop = true;}, FALLING);
 }
 
 
@@ -78,6 +81,7 @@ void MeasurementController::performMeasurement(MeasurementParams params){
   char command;
   holdStartTime = 0;
   doneMeasurement = false;
+  eStop = false;
 
 
   zAxis->resetDisplacement();
@@ -87,7 +91,7 @@ void MeasurementController::performMeasurement(MeasurementParams params){
 
   uint32_t samples = 0;
   uint32_t start = millis();
-  while(!doneMeasurement){
+  while(!doneMeasurement && !eStop){
     command = comm->getCommand();
     
     if (command != 'N'){
@@ -125,6 +129,9 @@ void MeasurementController::performMeasurement(MeasurementParams params){
           break;
       }
     }
+  }
+  if(eStop){
+    zAxis->emergencyStop(params.eStopStepDelay);
   }
 
   comm->sendDataPoint(samples, millis()-start, 99);

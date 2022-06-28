@@ -36,7 +36,7 @@ void setup(void){
   adc = new ADCController(2, ads);
 
   indenter = MeasurementController::getInstance();
-  indenter->setUpController(adc, zAxisPWM);
+  indenter->setUpController(adc, zAxisPWM, 3);
 
   comm->sendCommand('R');
 }

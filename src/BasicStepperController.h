@@ -12,7 +12,7 @@
 #ifndef __BASIC_STEPPER_CONTROLLER__
   #define __BASIC_STEPPER_CONTROLLER__
 
-  #define STEPPER_TIMEOUT 50
+  const uint32_t STEPPER_TIMEOUT = 50;
 
   class BasicStepperController{
     private:
@@ -21,7 +21,7 @@
       bool upPolarity;
       uint16_t stepDelay;
       uint32_t lastToggleTime;
-      int32_t stepCompensation;
+      int16_t stepCompensation;
       uint32_t lastMoveCallTime;
       
       
