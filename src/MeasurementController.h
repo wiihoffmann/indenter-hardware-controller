@@ -8,9 +8,9 @@
 
   struct MeasurementParams{
     uint16_t preload;
-    uint8_t preloadTime;
+    uint16_t preloadTime;
     uint16_t maxLoad;
-    uint8_t maxLoadTime;
+    uint16_t maxLoadTime;
     uint16_t stepDelay;
     uint16_t holdDownDelay;
     uint16_t holdUpDelay;
@@ -47,7 +47,7 @@
 
       MeasurementController();
       static void applyLoad(uint16_t targetload, uint16_t stepDelay, int16_t loadActual, uint8_t &stage);
-      static void holdLoad(uint16_t targetload, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint8_t holdTime, int16_t loadActual, uint8_t &stage);
+      static void holdLoad(uint16_t targetload, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage);
       static void removeLoad(uint16_t stepDelay, uint8_t &stage);
   };
 

@@ -44,7 +44,7 @@ void MeasurementController::applyLoad(uint16_t targetload, uint16_t stepDelay, i
 }
 
 
-void MeasurementController::holdLoad(uint16_t targetload, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint8_t holdTime, int16_t loadActual, uint8_t &stage){
+void MeasurementController::holdLoad(uint16_t targetload, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage){
   if(holdStartTime == 0) holdStartTime = millis();
 
   // if the load is above the upper limit and we are not already moving up -> move up;
@@ -72,20 +72,20 @@ void MeasurementController::removeLoad(uint16_t stepDelay, uint8_t &stage){
 
 
 void MeasurementController::performMeasurement(MeasurementParams params){
-  Communicator *comm = Communicator::getInstance();
-  uint32_t samples = 0;
-  uint32_t start = millis();
   uint8_t stage = 0;
-  int16_t load;
-  holdStartTime = 0;
-  doneMeasurement = false;
+  double load;
+  Communicator *comm = Communicator::getInstance();
 
   zAxis->resetDisplacement();
   adc->tare();
   adc->startADC([](){dataReady = true;});
 
-  zAxis->startMovingDown(700);
 
+  uint32_t samples = 0;
+  uint32_t start = millis();
+
+  holdStartTime = 0;
+  doneMeasurement = false;
   while(!doneMeasurement){
     char command = comm->getCommand();
     
@@ -97,34 +97,34 @@ void MeasurementController::performMeasurement(MeasurementParams params){
     
     if(dataReady){
       dataReady = false;
-      // load = adc->getLoad();
-      // comm->sendDataPoint(0, 1, stage);
-
-      // switch(stage){
-      //   case 0: // initial approach
-      //     applyLoad(params.preload, params.stepDelay, load, stage);
-      //     break;
-      //   case 1: // preload hold
-      //     holdLoad(params.preload, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.preloadTime, load, stage);
-      //     break;
-      //   case 2: // main load approach
-      //     applyLoad(params.maxLoad, params.stepDelay, load, stage);     
-      //     break;
-      //   case 3: // main load hold
-      //     holdLoad(params.maxLoad, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.maxLoadTime, load, stage);   
-      //     break;
-      //   case 4: // retract
-      //     removeLoad(params.stepDelay, stage);
-      //     break;
-      //   case 5: //done
-      //     adc->stopADC();
-      //     doneMeasurement = true;
-      //     break;
-      // }
+      load = adc->getLoad();
+      comm->sendDataPoint(zAxis->getDisplacement(), load, stage);      
 
       samples ++;
 
-      if(millis() - start > 1000){
+      switch(stage){
+        case 0: // initial approach
+          applyLoad(params.preload, params.stepDelay, load, stage);
+          break;
+        case 1: // preload hold
+          holdLoad(params.preload, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.preloadTime, load, stage);
+          break;
+        case 2: // main load approach
+          applyLoad(params.maxLoad, params.stepDelay, load, stage);     
+          break;
+        case 3: // main load hold
+          holdLoad(params.maxLoad, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.maxLoadTime, load, stage);   
+          break;
+        case 4: // retract
+          removeLoad(params.stepDelay, stage);
+          break;
+        case 5: //done
+          adc->stopADC();
+          doneMeasurement = true;
+          break;
+      }
+
+      if(millis() - start >= 1000){
         doneMeasurement = true;
       }
 
@@ -134,9 +134,17 @@ void MeasurementController::performMeasurement(MeasurementParams params){
   comm->sendDataPoint(samples, millis()-start, 99);
   adc->stopADC();
   comm->sendCommand('C');
+
+  Serial.println(params.preload);
+Serial.println(params.preloadTime);
+Serial.println(params.maxLoad);
+Serial.println(params.maxLoadTime);
+Serial.println(params.stepDelay);
+Serial.println(params.holdDownDelay);
+Serial.println(params.holdUpDelay);
+Serial.println(params.eStopStepDelay);
+Serial.println(params.tolerance);
 }
-
-
 
 
 // Serial.println(params.preload);
