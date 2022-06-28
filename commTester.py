@@ -2,6 +2,7 @@ from threading import Thread
 import time
 from struct import *
 import sys
+from tracemalloc import start
 from Communicator import *
 
 comm = Communicator()
@@ -48,22 +49,30 @@ def testSequence():
     
  
     comm.sendCode("*S", 22222)
-    print(comm.readCommand() + str(comm.readInt()))
 
     comm.sendCode("*X", 12345)
-    print(comm.readCommand() + str(comm.readInt()))
 
     comm.sendCode("*Y", -12345)
-    print(comm.readCommand() + str(comm.readInt()))
 
     comm.sendCode("*Z", 12321)
-    print(comm.readCommand() + str(comm.readInt()))
 
     # print("RAW: " + str(comm.getRawADCReading()))
 
     time.sleep(5)
 
 
+def testSequence2():
+    startTime = time.time()
+    while(time.time() - startTime < 10):
+        # comm.sendCode("*S", 200)
+
+        comm.sendCode("*X", 300)
+
+        comm.sendCode("*Y", -400)
+
+        comm.sendCode("*Z", 500)
+
+        time.sleep(.001)
 
 
 
@@ -72,10 +81,10 @@ if __name__ == '__main__':
         time.sleep(0)
     
 
-    for i in range(2):
-        print("iteration " + str(i))
-        testSequence()
-
+    # for i in range(1):
+    #     print("iteration " + str(i))
+    #     testSequence()
+    testSequence2()
 
     kill = False
     x = Thread(target=monitor, args=()).start()

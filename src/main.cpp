@@ -18,27 +18,10 @@ MeasurementController *indenter;
 Communicator *comm;
 
 char command;
+uint32_t lastBlink =0;
+int16_t stepRate;
 
-// uint32_t time;
-// uint32_t realtime = 0;
-// int16_t samples = 0;
-// void benchmark(){
-//   realtime = (micros() - time);
-//   if(realtime >= 1000000){
-//     Serial.println();
-//     Serial.print("Samples per second: "); Serial.println(samples/(realtime/1000000.0));
-//     Serial.print("Samples: "); Serial.println(samples);
-//     Serial.print("Real time: "); Serial.println(realtime);
-//     Serial.print("Steps: "); Serial.println(zAxisPWM->getDisplacement());
 
-//     samples = 0;
-//     realtime = 0;
-
-//     time = micros();
-//   }
-// }
-
-        
 void setup(void){
   pinMode(LED_BUILTIN, OUTPUT);
 
@@ -59,30 +42,36 @@ void setup(void){
 }
 
 
-uint32_t lastBlink =0;
+
 void loop(void){
   command = comm->getCommand();
   
   if(command != 'N'){
     switch(command){
       case 'S': // E-stop. This command should only ever be seen while taking a measurement, not here.
-        // TODO: Emergency stop	and send e-stop complete
+        // TODO: Emergency stop	and send E-stop complete
         comm->sendCommand('S', comm->getInt());
         break;
       
       case 'X': // move X axis
-        // TODO: move X axis
-        comm->sendCommand('X', comm->getInt());
+        stepRate = comm->getInt();
+        if(stepRate > 0) xAxis->moveDown(stepRate);
+        else if(stepRate < 0) xAxis->moveUp(abs(stepRate));
+        else xAxis->stopMoving();
         break;
       
       case 'Y': // move the Y axis
-        // TODO: move Y axis	
-        comm->sendCommand('Y', comm->getInt());
+        stepRate = comm->getInt();
+        if(stepRate > 0) yAxis->moveDown(stepRate);
+        else if(stepRate < 0) yAxis->moveUp(abs(stepRate));
+        else yAxis->stopMoving();
         break;
       
       case 'Z':	// move the Z axis
-        // TODO: move Z axis
-        comm->sendCommand('Z', comm->getInt());
+        stepRate = comm->getInt();
+        if(stepRate > 0) zAxis->moveDown(stepRate);
+        else if(stepRate < 0) zAxis->moveUp(abs(stepRate));
+        else zAxis->stopMoving();
         break;
       
       case 'B': // begin a measurement
@@ -97,7 +86,7 @@ void loop(void){
         break;
       
       default: // unknown command -> error
-        //comm->sendCommand('E', 1337);
+        comm->sendCommand('E', 1337);
         break;
     }
   }
@@ -105,5 +94,29 @@ void loop(void){
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
     lastBlink = millis();
   }
+
+  xAxis->processMove();
+  yAxis->processMove();
+  zAxis->processMove();
 }
 
+
+
+// uint32_t time;
+// uint32_t realtime = 0;
+// int16_t samples = 0;
+// void benchmark(){
+//   realtime = (micros() - time);
+//   if(realtime >= 1000000){
+//     Serial.println();
+//     Serial.print("Samples per second: "); Serial.println(samples/(realtime/1000000.0));
+//     Serial.print("Samples: "); Serial.println(samples);
+//     Serial.print("Real time: "); Serial.println(realtime);
+//     Serial.print("Steps: "); Serial.println(zAxisPWM->getDisplacement());
+
+//     samples = 0;
+//     realtime = 0;
+
+//     time = micros();
+//   }
+// }

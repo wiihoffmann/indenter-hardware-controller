@@ -16,7 +16,7 @@
     uint16_t holdUpDelay;
     uint16_t eStopStepDelay;
     uint16_t tolerance;
-    bool flipDirection;
+    bool flipDirection; // add code to make this do something!
   };
 
 

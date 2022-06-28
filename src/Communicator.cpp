@@ -12,10 +12,10 @@
 	*C					    - complete
   *M<int 16>      - measure load
   *N              - no command
-
+  *R              - ready
 */
 
-char Communicator::validCommands[] = {'E','S','X','Y','Z','B','D','C','M','N'};
+char Communicator::validCommands[] = {'E','S','X','Y','Z','B','D','C','M','N','R'};
 
 
 Communicator* Communicator::getInstance(){

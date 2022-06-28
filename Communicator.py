@@ -23,7 +23,7 @@ class MeasurementParams:
 class Communicator:
 
     def __init__(self):
-        self.arduino = serial.Serial(port='/dev/ttyACM2', baudrate=2000000, timeout=None)
+        self.arduino = serial.Serial(port='/dev/ttyACM1', baudrate=2000000, timeout=None)
         self.arduino.flush()
 
 
