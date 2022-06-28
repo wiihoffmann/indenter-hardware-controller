@@ -9,9 +9,9 @@ from struct import *
 class MeasurementParams:
     preamble = bytes("*B", 'utf-8') #     start measurement
     calFactor = 1                   #     double calFactor;
-    preload = 300                     #     uint16_t preload;
+    preload = -300                     #     int16_t preload;
     preloadTime = 2000                 #     uint16_t preloadTime;
-    maxLoad = 1000                     #     uint16_t maxLoad;
+    maxLoad = -1000                     #     int16_t maxLoad;
     maxLoadTime = 2000                #     uint16_t maxLoadTime;
     stepDelay = 700                 #     uint16_t stepDelay;
     holdDownDelay = 700               #     uint16_t holdDownDelay;
@@ -27,7 +27,7 @@ class Communicator:
 
 
     def sendMeasurementBegin(self, params):
-        dataToSend = pack("<%dsHHHHHHHHH" % (len(params.preamble)), params.preamble, params.preload, params.preloadTime, params.maxLoad, params.maxLoadTime, params.stepDelay, params.holdDownDelay, params.holdUpDelay, params.eStopStepDelay, params.tolerance)
+        dataToSend = pack("<%dshHhHHHHHH" % (len(params.preamble)), params.preamble, params.preload, params.preloadTime, params.maxLoad, params.maxLoadTime, params.stepDelay, params.holdDownDelay, params.holdUpDelay, params.eStopStepDelay, params.tolerance)
         self.arduino.write(dataToSend)
 
 

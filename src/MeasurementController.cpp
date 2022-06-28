@@ -35,7 +35,7 @@ void MeasurementController::emergencyStop(uint16_t stepDelay){
 }
 
 
-void MeasurementController::applyLoad(uint16_t targetload, uint16_t stepDelay, int16_t loadActual, uint8_t &stage){
+void MeasurementController::applyLoad(int16_t targetload, uint16_t stepDelay, int16_t loadActual, uint8_t &stage){
   if(zAxis->getDirection() != 1 && loadActual < targetload) zAxis->startMovingDown(stepDelay);
   if(loadActual >= targetload){
     zAxis->stopMoving();
@@ -44,7 +44,7 @@ void MeasurementController::applyLoad(uint16_t targetload, uint16_t stepDelay, i
 }
 
 
-void MeasurementController::holdLoad(uint16_t targetload, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage){
+void MeasurementController::holdLoad(int16_t targetload, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage){
   if(holdStartTime == 0) holdStartTime = millis();
 
   // if the load is above the upper limit and we are not already moving up -> move up;
