@@ -9,9 +9,9 @@ from struct import *
 class MeasurementParams:
     preamble = bytes("*B", 'utf-8') #     start measurement
     calFactor = 1                   #     double calFactor;
-    preload = -300                     #     int16_t preload;
+    preload = 300                     #     int16_t preload;
     preloadTime = 2000                 #     uint16_t preloadTime;
-    maxLoad = -1000                     #     int16_t maxLoad;
+    maxLoad = 1000                     #     int16_t maxLoad;
     maxLoadTime = 2000                #     uint16_t maxLoadTime;
     stepDelay = 700                 #     uint16_t stepDelay;
     holdDownDelay = 700               #     uint16_t holdDownDelay;

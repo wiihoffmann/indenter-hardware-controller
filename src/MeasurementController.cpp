@@ -72,9 +72,13 @@ void MeasurementController::removeLoad(uint16_t stepDelay, uint8_t &stage){
 
 
 void MeasurementController::performMeasurement(MeasurementParams params){
+  Communicator *comm = Communicator::getInstance();
   uint8_t stage = 0;
   double load;
-  Communicator *comm = Communicator::getInstance();
+  char command;
+  holdStartTime = 0;
+  doneMeasurement = false;
+  
 
   zAxis->resetDisplacement();
   adc->tare();
@@ -84,10 +88,9 @@ void MeasurementController::performMeasurement(MeasurementParams params){
   uint32_t samples = 0;
   uint32_t start = millis();
 
-  holdStartTime = 0;
-  doneMeasurement = false;
+
   while(!doneMeasurement){
-    char command = comm->getCommand();
+    command = comm->getCommand();
     
     if (command != 'N'){
       adc->stopADC();
