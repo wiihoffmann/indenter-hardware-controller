@@ -21,9 +21,8 @@
       bool upPolarity;
       uint16_t stepDelay;
       uint32_t lastToggleTime;
-      int16_t stepCompensation;
+      int32_t stepCompensation;
       uint32_t lastMoveCallTime;
-      
       
     public:
       BasicStepperController(uint8_t stepPin, uint8_t dirPin, bool invertDirPin);
