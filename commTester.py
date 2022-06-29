@@ -57,11 +57,11 @@ def testSequence2():
     while(time.time() - startTime < 3):
         # comm.sendCode("*S", 200)
 
-        comm.sendCode("*X", 300)
+        comm.sendCode("*X", -300)
 
-        comm.sendCode("*Y", -400)
+        comm.sendCode("*Y", 400)
 
-        comm.sendCode("*Z", 500)
+        comm.sendCode("*Z", 30000)
 
         time.sleep(.04)
 
@@ -72,7 +72,7 @@ if __name__ == '__main__':
         time.sleep(0)
     
 
-    for i in range(1):
+    for i in range(2):
         print("iteration " + str(i))
         testSequence()
         testSequence2()

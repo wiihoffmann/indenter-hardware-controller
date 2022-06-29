@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import time
 import serial
+import serial.tools.list_ports
 from struct import *
 
 
@@ -10,20 +11,21 @@ class MeasurementParams:
     preamble = bytes("*B", 'utf-8') #     start measurement
     calFactor = 1                   #     double calFactor;
     preload = 300                   #     int16_t preload;
-    preloadTime = 2000              #     uint16_t preloadTime;
+    preloadTime = 4000              #     uint16_t preloadTime;
     maxLoad = 1000                  #     int16_t maxLoad;
-    maxLoadTime = 2000              #     uint16_t maxLoadTime;
+    maxLoadTime = 4000              #     uint16_t maxLoadTime;
     stepDelay = 700                 #     uint16_t stepDelay;
     holdDownDelay = 700             #     uint16_t holdDownDelay;
     holdUpDelay = 800               #     uint16_t holdUpDelay;
     eStopStepDelay = 700            #     uint16_t eStopStepDelay;
-    tolerance = 50                  #     uint16_t targetTolerance;
+    tolerance = 100                 #     uint16_t targetTolerance;
     flipDirection = True            #     bool flip indenter direction
 
 class Communicator:
 
     def __init__(self):
-        self.arduino = serial.Serial(port='/dev/ttyACM1', baudrate=2000000, timeout=None)
+        ports = list(serial.tools.list_ports.comports())
+        self.arduino = serial.Serial(port=ports.pop().device, baudrate=2000000, timeout=None)
         self.arduino.flush()
 
 
