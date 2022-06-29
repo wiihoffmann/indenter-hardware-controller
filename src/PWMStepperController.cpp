@@ -3,8 +3,8 @@
 #include <TimerOne.h>
 
 
-int32_t PWMStepperController::displacement;
-int8_t PWMStepperController::direction;
+volatile int32_t PWMStepperController::displacement;
+volatile int8_t PWMStepperController::direction;
 
 PWMStepperController::PWMStepperController(uint8_t stepPin, uint8_t dirPin, bool invertDirPin){
   this->stepPin = stepPin;

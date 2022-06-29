@@ -18,8 +18,8 @@
       uint8_t stepPin;
       bool upPolarity;
       uint16_t stepDelay;
-      static int32_t displacement;
-      static int8_t direction;
+      static volatile int32_t displacement;
+      static volatile int8_t direction;
       
     public:
       PWMStepperController(uint8_t stepPin, uint8_t dirPin, bool invertDirPin);

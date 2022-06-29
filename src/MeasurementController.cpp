@@ -8,7 +8,7 @@ ADCController *MeasurementController::adc;
 PWMStepperController *MeasurementController::zAxis;
 bool MeasurementController::eStop;
 bool MeasurementController::doneMeasurement;
-bool MeasurementController::dataReady;
+volatile bool MeasurementController::dataReady;
 uint32_t MeasurementController::holdStartTime;
 
 
@@ -130,12 +130,14 @@ void MeasurementController::performMeasurement(MeasurementParams params){
       }
     }
   }
+
+  comm->sendDataPoint(samples, millis()-start, 99);
+  adc->stopADC();
+  
   if(eStop){
     zAxis->emergencyStop(params.eStopStepDelay);
   }
 
-  comm->sendDataPoint(samples, millis()-start, 99);
-  adc->stopADC();
   comm->sendCommand('C');
 }
 

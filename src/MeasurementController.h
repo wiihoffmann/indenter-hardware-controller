@@ -43,7 +43,7 @@
       static ADCController *adc;
       static PWMStepperController *zAxis;
       static bool eStop;
-      static bool dataReady;
+      static volatile bool dataReady;
       static bool doneMeasurement;
       static uint32_t holdStartTime;
 
