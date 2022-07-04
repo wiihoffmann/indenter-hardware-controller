@@ -22,7 +22,8 @@
       static volatile int8_t direction;
       
     public:
-      PWMStepperController(uint8_t stepPin, uint8_t dirPin, bool invertDirPin);
+      PWMStepperController(uint8_t stepPin, uint8_t dirPin);
+      void invertDirection();
       void startMovingUp(uint16_t stepDelay);
       void startMovingDown(uint16_t stepDelay);
       void stopMoving();

@@ -31,7 +31,7 @@ void setup(void){
   xAxis = new BasicStepperController(5,4, true);
   yAxis = new BasicStepperController(7,6, true);
   zAxis = new BasicStepperController(9, 8, true);
-  zAxisPWM = new PWMStepperController(9, 8, true);
+  zAxisPWM = new PWMStepperController(9, 8);
 
   adc = new ADCController(2, ads);
 

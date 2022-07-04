@@ -31,11 +31,13 @@ Communicator::Communicator(){
 
 
 void Communicator::sendDataPoint(int32_t displacement, int16_t load, uint8_t measurementStage){
+  // pack values into data point adapter for serialization
   dataPointAdapter dp;
   dp.point.displacement = displacement;
   dp.point.load = load;
   dp.point.stage = measurementStage;
   
+  // write the data point to the serial connection
   Serial.write("*D");
   Serial.write(dp.pointArray, sizeof(DataPoint));
 }
@@ -43,11 +45,14 @@ void Communicator::sendDataPoint(int32_t displacement, int16_t load, uint8_t mea
 
 
 void Communicator::sendCommand(char command, int16_t data){
+  // serialize the command and int
   uint8_t dataArray[4];
   dataArray[0] = '*';
   dataArray[1] = command;
   dataArray[2] = data;
   dataArray[3] = data >> 8;
+
+  // write the data to the serial port
   Serial.write(dataArray, 4);
 }
 
@@ -59,21 +64,21 @@ void Communicator::sendCommand(char command){
 
 MeasurementParams Communicator::receiveMeasurementParams(){
 	paramAdapter pa;
-
+  // wait for all of the data to arrive, and read it into the array part of the union
 	while(Serial.available() < sizeof(MeasurementParams)); 				//TODO: add timeout to waiting
 	Serial.readBytes(pa.paramArray, sizeof(MeasurementParams));
-
+  
+  // return the struct part of the union
 	return pa.parameters;
 }
 
 
 int16_t Communicator::getInt(){
   int16_t num = 0;
-  //wait for bytes to arrive
-	while(Serial.available() < sizeof(uint16_t)){ 				//TODO: add timeout to waiting
-    delay(1);
-	}
+  // wait for bytes to arrive
+	while(Serial.available() < sizeof(uint16_t)); 				//TODO: add timeout to waiting
   
+  // read in the int and return it
   num |= (uint16_t)Serial.read();
   num |= (uint16_t)Serial.read() << 8;
   return num;
@@ -84,12 +89,14 @@ char Communicator::getCommand(){
   char command;
   bool foundAsterisk = false;
 
-  // make sure we have the asterisk and following command letter
+  // make sure we have enough bytes to have the asterisk and command letter following it
   if(Serial.available() >= 2){
+    // while we have bytes to read, read until we find the asterisk
     while(Serial.available() >= 2 && !foundAsterisk){
       if(Serial.read() == '*') foundAsterisk = true;
     }
 
+    // get the command and make sure it is valid. Return command if valid.
     command = Serial.read();
     for(uint8_t i=0; i < sizeof(validCommands); i++){
       if(validCommands[i] == command){
@@ -102,6 +109,8 @@ char Communicator::getCommand(){
       sendCommand('E', 0001);
     }
   }
+
+  // return 'N' if we did not have enough bytes present to have the asterisk and command
 	return 'N';
 }
 

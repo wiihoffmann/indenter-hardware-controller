@@ -83,7 +83,9 @@ void MeasurementController::performMeasurement(MeasurementParams params){
   doneMeasurement = false;
   eStop = false;
 
-
+  if(params.flipDirection){
+    zAxis->invertDirection();
+  }
   zAxis->resetDisplacement();
   adc->tare();
   adc->startADC([](){dataReady = true;});

@@ -6,18 +6,12 @@
 volatile int32_t PWMStepperController::displacement;
 volatile int8_t PWMStepperController::direction;
 
-PWMStepperController::PWMStepperController(uint8_t stepPin, uint8_t dirPin, bool invertDirPin){
+PWMStepperController::PWMStepperController(uint8_t stepPin, uint8_t dirPin){
   this->stepPin = stepPin;
   this->dirPin = dirPin;
   this->displacement = 0;
   direction = 0;
-
-  if(invertDirPin){
-    upPolarity = HIGH;
-  }
-  else{
-    upPolarity = LOW;
-  }
+  upPolarity = HIGH;
 
   pinMode(dirPin, OUTPUT);
 
@@ -25,6 +19,11 @@ PWMStepperController::PWMStepperController(uint8_t stepPin, uint8_t dirPin, bool
   Timer1.initialize(400);
   // increment/decrement the displacement each time the the timer triggers.
   Timer1.attachInterrupt([](){displacement += direction;});
+}
+
+
+void PWMStepperController::invertDirection(){
+  upPolarity = !upPolarity;
 }
 
 
