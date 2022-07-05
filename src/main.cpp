@@ -18,7 +18,7 @@ MeasurementController *indenter;
 Communicator *comm;
 
 char command;           // the last command we received from the host
-uint32_t lastBlink =0;  // last time we blinked the built-in LED
+uint32_t lastBlink = 0; // last time we blinked the built-in LED
 int16_t stepRate;       // how fast to move the stepper
 
 
@@ -41,7 +41,7 @@ void setup(void){
   indenter->setUpController(adc, zAxisPWM, 3);
 
   // tell the host that we are ready to accept commands
-  comm->sendCommand('R');
+  comm->sendCommand(CONTROLLER_READY_CODE);
 }
 
 
@@ -49,14 +49,14 @@ void loop(void){
   command = comm->getCommand();
   
   // if we have a valid command
-  if(command != 'N'){
+  if(command != NO_COMMAND_CODE){
     switch(command){
-      case 'S': // E-stop. This command should only ever be seen while taking a measurement, not here.
+      case EMERGENCY_STOP_CODE: // E-stop. This command should only ever be seen while taking a measurement, not here.
         // TODO: Emergency stop	and send E-stop complete
-        comm->sendCommand('S', comm->getInt());
+        comm->sendCommand(EMERGENCY_STOP_CODE, comm->getInt());
         break;
       
-      case 'X': // move X axis
+      case MOVE_X_AXIS_CODE: // move X axis
         stepRate = comm->getInt();
         // move down if positive, up if negative, stop otherwise
         if(stepRate > 0) xAxis->moveDown(stepRate);
@@ -64,7 +64,7 @@ void loop(void){
         else xAxis->stopMoving();
         break;
       
-      case 'Y': // move the Y axis
+      case MOVE_Y_AXIS_CODE: // move the Y axis
         stepRate = comm->getInt();
         // move down if positive, up if negative, stop otherwise
         if(stepRate > 0) yAxis->moveDown(stepRate);
@@ -72,7 +72,7 @@ void loop(void){
         else yAxis->stopMoving();
         break;
       
-      case 'Z':	// move the Z axis
+      case MOVE_Z_AXIS_CODE:	// move the Z axis
         stepRate = comm->getInt();
         // move down if positive, up if negative, stop otherwise
         if(stepRate > 0) zAxis->moveDown(stepRate);
@@ -80,19 +80,19 @@ void loop(void){
         else zAxis->stopMoving();
         break;
       
-      case 'B': // begin a measurement
+      case BEGIN_MEASUREMENT_CODE: // begin a measurement
         indenter->performMeasurement(comm->receiveMeasurementParams());
         break;
       
-      case 'M': // request for raw measurement
-        comm->sendCommand('M', adc->getRawReading());
+      case RAW_MEASUREMENT_CODE: // request for raw measurement
+        comm->sendCommand(RAW_MEASUREMENT_CODE, adc->getRawReading());
       
-      case 'E': // error code
+      case ERROR_CODE: // error code
         // TODO: handle error
         break;
       
       default: // unknown command -> error
-        comm->sendCommand('E', 1337);
+        comm->sendCommand(ERROR_CODE, 1337);
         break;
     }
   }

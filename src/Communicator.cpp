@@ -15,7 +15,9 @@
   *R              - ready
 */
 
-char Communicator::validCommands[] = {'E','S','X','Y','Z','B','D','C','M','N','R'};
+char Communicator::validCommands[] = {ERROR_CODE, EMERGENCY_STOP_CODE, MOVE_X_AXIS_CODE, MOVE_Y_AXIS_CODE, MOVE_Z_AXIS_CODE,
+                                      BEGIN_MEASUREMENT_CODE, DATA_POINT_CODE, MEASUREMENT_COMPLETE_CODE, RAW_MEASUREMENT_CODE,
+                                      CONTROLLER_READY_CODE,NO_COMMAND_CODE};
 
 
 Communicator* Communicator::getInstance(){
@@ -106,11 +108,11 @@ char Communicator::getCommand(){
 
     // if we found the asterisk and made it here, the command is invalid
     if(foundAsterisk){
-      sendCommand('E', 0001);
+      sendCommand(ERROR_CODE, 0001);
     }
   }
 
   // return 'N' if we did not have enough bytes present to have the asterisk and command
-	return 'N';
+	return NO_COMMAND_CODE;
 }
 

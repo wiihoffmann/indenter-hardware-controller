@@ -111,7 +111,7 @@ void MeasurementController::performMeasurement(MeasurementParams params){
     
     // We should not get any commands from the controller while we perform
     // the measurement. E-stop if we get any commands.
-    if (command != 'N') emergencyStop(params.eStopStepDelay);
+    if (command != NO_COMMAND_CODE) emergencyStop(params.eStopStepDelay);
     
     // if the ADC has signalled that data is available, process it.
     if(dataReady){
@@ -154,7 +154,7 @@ void MeasurementController::performMeasurement(MeasurementParams params){
   }
 
   // send the command to denote that the measurement is complete
-  comm->sendCommand('C');
+  comm->sendCommand(MEASUREMENT_COMPLETE_CODE);
 }
 
 

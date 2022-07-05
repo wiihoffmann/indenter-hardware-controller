@@ -14,6 +14,18 @@
 #ifndef __COMMUNICATOR__
   #define __COMMUNICATOR__
 	
+  #define ERROR_CODE 'E'
+  #define EMERGENCY_STOP_CODE 'S'
+  #define MOVE_X_AXIS_CODE 'X'
+  #define MOVE_Y_AXIS_CODE 'Y'
+  #define MOVE_Z_AXIS_CODE 'Z'
+  #define BEGIN_MEASUREMENT_CODE 'B'
+  #define DATA_POINT_CODE 'D'
+  #define MEASUREMENT_COMPLETE_CODE 'C'
+  #define RAW_MEASUREMENT_CODE 'M'
+  #define CONTROLLER_READY_CODE 'R'
+  #define NO_COMMAND_CODE 'N'
+
   // union used for serializing the measurement params
 	union paramAdapter {
 		MeasurementParams parameters;
