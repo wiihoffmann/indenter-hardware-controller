@@ -48,24 +48,66 @@
        */
       static MeasurementController* getInstance();
 
-      
-      static void DataReadyHandler();
+      /**
+       * Set up the measurement controller. Initializes the pointers.
+       * @param adc a pointer to the ADC to be used
+       * @param zAxis a pointer to the zAxis stepper
+       * @param eStopInterruptPin the pin the e-stop button is attached to
+       */
       static void setUpController(ADCController *adc, PWMStepperController *zAxis, uint8_t eStopInterruptPin);
+      
+      /**
+       * Starts to perform the stiffness measurement
+       * @param params the parameters of the measurement
+       */
       static void performMeasurement(MeasurementParams params);
-      static void emergencyStop(uint16_t stepDelay);
 
     private:
       static ADCController *adc;
       static PWMStepperController *zAxis;
-      static bool eStop;
-      static volatile bool dataReady;
-      static bool doneMeasurement;
-      static uint32_t holdStartTime;
+      static bool eStop;                  // flag set to true when performing an e-stop
+      static volatile bool dataReady;     // flag set to true when data from ADC is ready
+      static bool doneMeasurement;        // flag set to true when the measurement completes
+      static uint32_t holdStartTime;      // time (millis) when a hold was initiated
 
+      /**
+       * Build a new measurement controller
+       */
       MeasurementController();
-      static void applyLoad(int16_t targetload, uint16_t stepDelay, int16_t loadActual, uint8_t &stage);
-      static void holdLoad(int16_t targetload, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage);
+
+      /**
+       * Move the indenter head downward to achieve a given load.
+       * @param targetLoad the target load to apply (ADC reading units)
+       * @param stepDelay half of the period to wait between steps
+       * @param loadActual the current load read by the ADC
+       * @param stage the current measurement stage. Increments after load is applied.
+       */
+      static void applyLoad(int16_t targetLoad, uint16_t stepDelay, int16_t loadActual, uint8_t &stage);
+      
+      /**
+       * Slowly adjusts the indenter head position to maintain a target load
+       * @param targetLoad the target load to maintain (ADC reading units)
+       * @param tolerace deadband around the target before we start moving the head. (ADC reading units)
+       * @param holdDownDelay half of the period to wait between steps when moving downward
+       * @param holdUpDelay half of the period to wait between steps when moving upward
+       * @param holdTime how long to hold the given load (millis)
+       * @param loadActual the actual load reading from the load call (ADC reading units)
+       * @param stage the current measurement stage. Increments after load has been held.
+       */
+      static void holdLoad(int16_t targetLoad, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage);
+      
+      /**
+       * Retracts the indenter head, removing the applied load.
+       * @param stepDelay half of the period to wait between steps.
+       * @param stage the current measurement stage. Increments after load has been held.
+       */
       static void removeLoad(uint16_t stepDelay, uint8_t &stage);
+      
+      /**
+      * Emergency stop the measurement
+      * @param stepDelay half of the time period between steps when performing an e-stop
+      */
+      static void emergencyStop(uint16_t stepDelay);
   };
 
 #endif

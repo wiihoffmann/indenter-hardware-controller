@@ -60,7 +60,7 @@ void ADCController::tare(){
 }
 
 
-double ADCController::getLoad(){
+int16_t ADCController::getLoad(){
   // read the adc and tare the reading
   return (ads->getLastConversionResults() - offset);
 }

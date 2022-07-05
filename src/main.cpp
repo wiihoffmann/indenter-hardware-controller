@@ -17,17 +17,19 @@ ADCController *adc;
 MeasurementController *indenter;
 Communicator *comm;
 
-char command;
-uint32_t lastBlink =0;
-int16_t stepRate;
+char command;           // the last command we received from the host
+uint32_t lastBlink =0;  // last time we blinked the built-in LED
+int16_t stepRate;       // how fast to move the stepper
 
 
 void setup(void){
   pinMode(LED_BUILTIN, OUTPUT);
 
+  // setup serial
   Serial.begin(2000000);
   comm = Communicator::getInstance();
 
+  // set up the motor controllers
   xAxis = new BasicStepperController(5,4, true);
   yAxis = new BasicStepperController(7,6, true);
   zAxis = new BasicStepperController(9, 8, true);
@@ -38,14 +40,15 @@ void setup(void){
   indenter = MeasurementController::getInstance();
   indenter->setUpController(adc, zAxisPWM, 3);
 
+  // tell the host that we are ready to accept commands
   comm->sendCommand('R');
 }
-
 
 
 void loop(void){
   command = comm->getCommand();
   
+  // if we have a valid command
   if(command != 'N'){
     switch(command){
       case 'S': // E-stop. This command should only ever be seen while taking a measurement, not here.
@@ -55,6 +58,7 @@ void loop(void){
       
       case 'X': // move X axis
         stepRate = comm->getInt();
+        // move down if positive, up if negative, stop otherwise
         if(stepRate > 0) xAxis->moveDown(stepRate);
         else if(stepRate < 0) xAxis->moveUp(abs(stepRate));
         else xAxis->stopMoving();
@@ -62,6 +66,7 @@ void loop(void){
       
       case 'Y': // move the Y axis
         stepRate = comm->getInt();
+        // move down if positive, up if negative, stop otherwise
         if(stepRate > 0) yAxis->moveDown(stepRate);
         else if(stepRate < 0) yAxis->moveUp(abs(stepRate));
         else yAxis->stopMoving();
@@ -69,6 +74,7 @@ void loop(void){
       
       case 'Z':	// move the Z axis
         stepRate = comm->getInt();
+        // move down if positive, up if negative, stop otherwise
         if(stepRate > 0) zAxis->moveDown(stepRate);
         else if(stepRate < 0) zAxis->moveUp(abs(stepRate));
         else zAxis->stopMoving();
@@ -90,11 +96,13 @@ void loop(void){
         break;
     }
   }
+  // blink the LED if we are in the main loop waiting for commands
   else if(millis() > lastBlink + 100){
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
     lastBlink = millis();
   }
 
+  // process any steps the motors may need to make
   xAxis->processMove();
   yAxis->processMove();
   zAxis->processMove();

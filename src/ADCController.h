@@ -45,7 +45,7 @@
        * Gets the reading of the ADC relative to the tare point
        * @return the ADC reading 
        */
-      double getLoad();
+      int16_t getLoad();
 
       /**
        * Tell the ADC to begin performing automated conversions. The alert pin is driven

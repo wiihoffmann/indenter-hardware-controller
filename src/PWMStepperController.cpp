@@ -1,10 +1,9 @@
 #include "PWMStepperController.h"
-#include <Arduino.h>
-#include <TimerOne.h>
 
 
 volatile int32_t PWMStepperController::displacement;
 volatile int8_t PWMStepperController::direction;
+
 
 PWMStepperController::PWMStepperController(uint8_t stepPin, uint8_t dirPin){
   this->stepPin = stepPin;
@@ -23,27 +22,35 @@ PWMStepperController::PWMStepperController(uint8_t stepPin, uint8_t dirPin){
 
 
 void PWMStepperController::invertDirection(){
+  // flip the polarity of the direction pin
   upPolarity = !upPolarity;
 }
 
 
 void PWMStepperController::startMovingUp(uint16_t stepDelay){
+  // set the direction pin
   digitalWrite(dirPin, upPolarity);
   direction = -1;
+  
+  // start generating the step pulses
   Timer1.setPeriod(stepDelay);
   Timer1.pwm(/*pwm pin*/ 9, /*fill factor*/ 512);  // 512 = 50% duty cycle
 }
 
 
 void PWMStepperController::startMovingDown(uint16_t stepDelay){
+  // set the direction pin
   digitalWrite(dirPin, !upPolarity);
   direction = 1;
+  
+  // start generating the step pulses
   Timer1.setPeriod(stepDelay);
   Timer1.pwm(/*pwm pin*/ 9, /*fill factor*/ 512);  // 512 = 50% duty cycle
 }
 
 
 void PWMStepperController::stopMoving(){
+  // stop generating step pulses
   Timer1.stop();
   direction = 0;
 }
@@ -65,6 +72,7 @@ uint8_t PWMStepperController::getDirection(){
 
 
 void PWMStepperController::emergencyStop(uint16_t stepDelay){
+  // move up until displacement is zero
   if(displacement > 0){
     startMovingUp(stepDelay);
     while(displacement > 0);
