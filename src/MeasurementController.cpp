@@ -98,9 +98,7 @@ void MeasurementController::performMeasurement(MeasurementParams params){
   uint32_t start = millis();
 
   // home the zAxis and start the ADC conversion process
-  if(params.flipDirection){
-    zAxis->invertDirection();
-  }
+  zAxis->invertDirection(params.flipDirection);
   zAxis->resetDisplacement();
   adc->tare();
   adc->startADC([](){dataReady = true;});
@@ -109,9 +107,7 @@ void MeasurementController::performMeasurement(MeasurementParams params){
   while(!doneMeasurement && !eStop){
     command = comm->getCommand();
     
-    // We should not get any commands from the controller while we perform
-    // the measurement. E-stop if we get any commands.
-    if (command != NO_COMMAND_CODE) emergencyStop(params.eStopStepDelay);
+    if (command == EMERGENCY_STOP_CODE) eStop = true;
     
     // if the ADC has signalled that data is available, process it.
     if(dataReady){
@@ -150,7 +146,7 @@ void MeasurementController::performMeasurement(MeasurementParams params){
   
   // perform an E-stop if the flag is set
   if(eStop){
-    zAxis->emergencyStop(params.eStopStepDelay);
+    emergencyStop(params.eStopStepDelay);
   }
 
   // send the command to denote that the measurement is complete

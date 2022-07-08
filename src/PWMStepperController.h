@@ -35,7 +35,7 @@
        * inverts the polarity of the step pin. Call if the 
        * indenter moves up when it should move down or vise versa.
        */
-      void invertDirection();
+      void invertDirection(bool flip);
 
       /**
        * Call to start moving the stepper in the upward direction.

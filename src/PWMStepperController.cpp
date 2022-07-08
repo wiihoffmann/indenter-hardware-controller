@@ -21,9 +21,9 @@ PWMStepperController::PWMStepperController(uint8_t stepPin, uint8_t dirPin){
 }
 
 
-void PWMStepperController::invertDirection(){
+void PWMStepperController::invertDirection(bool flip){
   // flip the polarity of the direction pin
-  upPolarity = !upPolarity;
+  upPolarity = flip;
 }
 
 
