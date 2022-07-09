@@ -95,14 +95,15 @@ void MeasurementController::performMeasurement(MeasurementParams params){
 
   // used for debugging. Can be removed later.
   uint32_t samples = 0;
-  uint32_t start = millis();
+  uint32_t start;
 
   // home the zAxis and start the ADC conversion process
   zAxis->invertDirection(params.flipDirection);
   zAxis->resetDisplacement();
   adc->tare();
   adc->startADC([](){dataReady = true;});
-
+  start = millis();
+  
   // loop until the measurement completes, or the emergency stop flag is set
   while(!doneMeasurement && !eStop){
     command = comm->getCommand();
