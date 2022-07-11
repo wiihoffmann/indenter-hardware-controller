@@ -5,6 +5,15 @@
 #include "PWMStepperController.h"
 #include "BasicStepperController.h"
 
+#define X_STEP_PIN 5
+#define X_DIR_PIN 4
+#define Y_STEP_PIN 7
+#define Y_DIR_PIN 6
+#define Z_STEP_PIN 9
+#define Z_DIR_PIN 8
+#define ADC_INTERRUPT_PIN 2
+#define E_STOP_INTERRUPT_PIN 3
+
 Adafruit_ADS1115 ads; /* Use this for the 16-bit version */
 // Adafruit_ADS1015 ads;     /* Use this for the 12-bit version */
 
@@ -30,15 +39,15 @@ void setup(void){
   comm = Communicator::getInstance();
 
   // set up the motor controllers
-  xAxis = new BasicStepperController(5,4, true);
-  yAxis = new BasicStepperController(7,6, true);
-  zAxis = new BasicStepperController(9, 8, true);
-  zAxisPWM = new PWMStepperController(9, 8);
+  xAxis = new BasicStepperController(X_STEP_PIN, X_DIR_PIN, true);
+  yAxis = new BasicStepperController(Y_STEP_PIN, Y_DIR_PIN, true);
+  zAxis = new BasicStepperController(Z_STEP_PIN, Z_DIR_PIN, true);
+  zAxisPWM = new PWMStepperController(Z_STEP_PIN, Z_DIR_PIN);
 
-  adc = new ADCController(2, ads);
+  adc = new ADCController(ADC_INTERRUPT_PIN, ads);
 
   indenter = MeasurementController::getInstance();
-  indenter->setUpController(adc, zAxisPWM, 3);
+  indenter->setUpController(adc, zAxisPWM, E_STOP_INTERRUPT_PIN);
 
   // tell the host that we are ready to accept commands
   comm->sendCommand(CONTROLLER_READY_CODE);
