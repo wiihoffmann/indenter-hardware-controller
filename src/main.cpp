@@ -35,7 +35,7 @@ void setup(void){
   pinMode(LED_BUILTIN, OUTPUT);
 
   // setup serial
-  Serial.begin(2000000);
+  Serial.begin(1000000);
   comm = Communicator::getInstance();
 
   // set up the motor controllers
