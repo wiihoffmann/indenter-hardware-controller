@@ -143,7 +143,7 @@ void MeasurementController::performMeasurement(MeasurementParams params){
   }
 
   // send a final data point with number of samples obtained, and total measurement time (millis)
-  comm->sendDataPoint(samples, millis()-start, 99);
+  // comm->sendDataPoint(samples, millis()-start, 99);
   
   // perform an E-stop if the flag is set
   if(eStop){
