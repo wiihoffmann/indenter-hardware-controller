@@ -54,7 +54,7 @@
        * @param zAxis a pointer to the zAxis stepper
        * @param eStopInterruptPin the pin the e-stop button is attached to
        */
-      static void setUpController(ADCController *adc, PWMStepperController *zAxis, uint8_t eStopInterruptPin);
+      static void setUpController(ADCController *adc, PWMStepperController *zAxis, uint8_t eStopInterruptPin, uint8_t solenoidPin, uint8_t vacuumPin);
       
       /**
        * Starts to perform the stiffness measurement
@@ -69,6 +69,8 @@
       static volatile bool dataReady;     // flag set to true when data from ADC is ready
       static bool doneMeasurement;        // flag set to true when the measurement completes
       static uint32_t holdStartTime;      // time (millis) when a hold was initiated
+      static uint8_t solenoidPin;
+      static uint8_t vacuumPin;
 
       /**
        * Build a new measurement controller

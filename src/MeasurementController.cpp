@@ -8,6 +8,8 @@ bool MeasurementController::eStop;
 bool MeasurementController::doneMeasurement;
 volatile bool MeasurementController::dataReady;
 uint32_t MeasurementController::holdStartTime;
+uint8_t MeasurementController::solenoidPin;
+uint8_t MeasurementController::vacuumPin;
 
 
 MeasurementController* MeasurementController::getInstance(){
@@ -21,10 +23,18 @@ MeasurementController::MeasurementController(){
 }
 
 
-void MeasurementController::setUpController(ADCController *adc, PWMStepperController *zAxis, uint8_t eStopInterruptPin){
+void MeasurementController::setUpController(ADCController *adc, PWMStepperController *zAxis, uint8_t eStopInterruptPin, uint8_t solenoidPin, uint8_t vacuumPin){
   MeasurementController::adc =  adc;
   MeasurementController::zAxis = zAxis;
+  MeasurementController::solenoidPin = solenoidPin;
+  MeasurementController::vacuumPin = vacuumPin;
   
+  // set up the vacuum pump/gripper
+  pinMode(solenoidPin, OUTPUT);
+  pinMode(vacuumPin, OUTPUT);
+  digitalWrite(solenoidPin, LOW);
+  digitalWrite(vacuumPin, LOW);
+
   // set up the emergency stop interrupt
   pinMode(eStopInterruptPin, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(eStopInterruptPin), [](){MeasurementController::eStop = true;}, FALLING);
@@ -36,8 +46,14 @@ void MeasurementController::emergencyStop(uint16_t stepDelay){
   doneMeasurement = true;
   // stop ADC to prevent interrups from it
   adc->stopADC();
+  // make sure the vacuum pump is off
+  digitalWrite(vacuumPin, LOW);
   // emergency retract the indenter head
   zAxis->emergencyStop(stepDelay);
+  // release gripper
+  digitalWrite(solenoidPin, HIGH);
+  delay(1000);
+  digitalWrite(solenoidPin, LOW);
 }
 
 
@@ -54,7 +70,11 @@ void MeasurementController::applyLoad(int16_t targetLoad, uint16_t stepDelay, in
 
 
 void MeasurementController::holdLoad(int16_t targetLoad, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage){
-  if(holdStartTime == 0) holdStartTime = millis();
+  if(holdStartTime == 0){
+    holdStartTime = millis();
+    // turn on the vacuum 
+    if(stage == 1) digitalWrite(vacuumPin, HIGH);
+  }
 
   // if the load is above the upper limit and we are not already moving up -> move up;
   if(loadActual > tolerance + targetLoad && zAxis->getDirection() != 1) zAxis->startMovingUp(holdUpDelay);
@@ -66,6 +86,8 @@ void MeasurementController::holdLoad(int16_t targetLoad, uint16_t tolerance, uin
   // move on to next stage once hold time has elapsed
   if(millis() - holdStartTime >= holdTime){
     zAxis->stopMoving();
+    // turn off the vacuum 
+    digitalWrite(vacuumPin, LOW);
     holdStartTime = 0;
     stage ++;
   }
@@ -136,7 +158,12 @@ void MeasurementController::performMeasurement(MeasurementParams params){
           break;
         case 5: //done
           adc->stopADC();
-          doneMeasurement = true;
+          doneMeasurement = true; 
+          // turn off the vacuuum and release the gripper
+          digitalWrite(vacuumPin, LOW);
+          digitalWrite(solenoidPin, HIGH);
+          delay(1000);
+          digitalWrite(solenoidPin, LOW);
           break;
       }
     }
