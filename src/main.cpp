@@ -14,7 +14,7 @@
 #define ADC_INTERRUPT_PIN 2
 #define E_STOP_INTERRUPT_PIN 3
 #define SOLENOID_PIN 10
-#define VACUUM_PIN 12
+#define VACUUM_PIN 11
 
 Adafruit_ADS1115 ads; /* Use this for the 16-bit version */
 // Adafruit_ADS1015 ads;     /* Use this for the 12-bit version */
