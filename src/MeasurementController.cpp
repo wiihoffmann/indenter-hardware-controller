@@ -123,7 +123,7 @@ void MeasurementController::performMeasurement(MeasurementParams params){
     doneMeasurement = false;
     stage = 0;
     holdStartTime = 0;
-    comm->sendCommand(NEW_TEST_BEGIN_CODE);
+    if(i > 0)comm->sendCommand(NEW_TEST_BEGIN_CODE);
     adc->startADC([](){dataReady = true;});
 
     // loop until the measurement completes, or the emergency stop flag is set
