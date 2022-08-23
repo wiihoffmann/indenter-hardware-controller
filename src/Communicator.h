@@ -22,9 +22,10 @@
   #define BEGIN_MEASUREMENT_CODE 'B'
   #define DATA_POINT_CODE 'D'
   #define MEASUREMENT_COMPLETE_CODE 'C'
+  #define NEW_TEST_BEGIN_CODE 'N'
   #define RAW_MEASUREMENT_CODE 'M'
   #define CONTROLLER_READY_CODE 'R'
-  #define NO_COMMAND_CODE 'N'
+  #define NO_COMMAND_CODE 'K'
 
   // union used for serializing the measurement params
 	union paramAdapter {

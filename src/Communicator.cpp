@@ -9,9 +9,10 @@
 	*Z<int 16>			- z-axis move at step delay given by <int 16>
 	*B<int 16><uint16><int 16><uint 16><uint 16><uint 16><uint 16><uint 16><int 16>				- begin measurement (preload, preload time, max load, max load time, step delay, hold step down delay, hold step up delay, e-stop step delay, hold load tolerance)
 	*D<int 32><double><uint 8> - data point (displacement, load, phase)
-	*C					    - complete
+	*N              - New test start
+  *C					    - complete
   *M<int 16>      - measure load
-  *N              - no command
+  *K              - no command
   *R              - ready
 */
 
@@ -112,7 +113,7 @@ char Communicator::getCommand(){
     }
   }
 
-  // return 'N' if we did not have enough bytes present to have the asterisk and command
+  // return 'K' if we did not have enough bytes present to have the asterisk and command
 	return NO_COMMAND_CODE;
 }
 
