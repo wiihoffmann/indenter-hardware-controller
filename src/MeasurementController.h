@@ -26,6 +26,8 @@
     uint16_t eStopStepDelay;// delay between steps (micros) when performing an emergency stop
     uint16_t tolerance;     // the hysterisis around the set load point (in raw ADC units)
     bool flipDirection;     // invert the direction of travel for the indenter head
+    bool isThresholdTest;   // is the test a pain threshold/tolerance test?
+    uint16_t iterations;    // how many interations of the test to run
   };
 
 

@@ -108,63 +108,62 @@ void MeasurementController::removeLoad(uint16_t stepDelay, uint8_t &stage){
 
 void MeasurementController::performMeasurement(MeasurementParams params){
   Communicator *comm = Communicator::getInstance();
-  uint8_t stage = 0;
+  uint8_t stage;
   int16_t load;
   char command;
-  holdStartTime = 0;
-  doneMeasurement = false;
   eStop = false;
-
-  // used for debugging. Can be removed later.
-  uint32_t samples = 0;
-  uint32_t start;
 
   // home the zAxis and start the ADC conversion process
   zAxis->invertDirection(params.flipDirection);
   zAxis->resetDisplacement();
   adc->tare();
-  adc->startADC([](){dataReady = true;});
-  start = millis();
-  
-  // loop until the measurement completes, or the emergency stop flag is set
-  while(!doneMeasurement && !eStop){
-    command = comm->getCommand();
-    
-    if (command == EMERGENCY_STOP_CODE) eStop = true;
-    
-    // if the ADC has signalled that data is available, process it.
-    if(dataReady){
-      dataReady = false;
-      samples ++;
-      load = adc->getLoad();
-      comm->sendDataPoint(zAxis->getDisplacement(), load, stage);      
 
-      // perform the relavent action for the measurement stage we are on
-      switch(stage){
-        case 0: // initial approach
-          applyLoad(params.preload, params.stepDelay, load, stage);
-          break;
-        case 1: // preload hold
-          holdLoad(params.preload, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.preloadTime, load, stage);
-          break;
-        case 2: // main load approach
-          applyLoad(params.maxLoad, params.stepDelay, load, stage);     
-          break;
-        case 3: // main load hold
-          holdLoad(params.maxLoad, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.maxLoadTime, load, stage);   
-          break;
-        case 4: // retract
-          removeLoad(params.stepDelay, stage);
-          break;
-        case 5: //done
-          adc->stopADC();
-          doneMeasurement = true; 
-          // turn off the vacuuum and release the gripper
-          digitalWrite(vacuumPin, LOW);
-          digitalWrite(solenoidPin, HIGH);
-          delay(1000);
-          digitalWrite(solenoidPin, LOW);
-          break;
+  
+  for(uint16_t i = 0; i < params.iterations && eStop == false; i++){
+    doneMeasurement = false;
+    stage = 0;
+    holdStartTime = 0;
+    adc->startADC([](){dataReady = true;});
+
+    // loop until the measurement completes, or the emergency stop flag is set
+    while(!doneMeasurement && !eStop){
+      command = comm->getCommand();
+      
+      if (command == EMERGENCY_STOP_CODE) eStop = true;
+      
+      // if the ADC has signalled that data is available, process it.
+      if(dataReady){
+        dataReady = false;
+        load = adc->getLoad();
+        comm->sendDataPoint(zAxis->getDisplacement(), load, stage);      
+
+        // perform the relavent action for the measurement stage we are on
+        switch(stage){
+          case 0: // initial approach
+            applyLoad(params.preload, params.stepDelay, load, stage);
+            break;
+          case 1: // preload hold
+            holdLoad(params.preload, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.preloadTime, load, stage);
+            break;
+          case 2: // main load approach
+            applyLoad(params.maxLoad, params.stepDelay, load, stage);     
+            break;
+          case 3: // main load hold
+            holdLoad(params.maxLoad, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.maxLoadTime, load, stage);   
+            break;
+          case 4: // retract
+            removeLoad(params.stepDelay, stage);
+            break;
+          case 5: //done
+            adc->stopADC();
+            doneMeasurement = true; 
+            // turn off the vacuuum and release the gripper
+            digitalWrite(vacuumPin, LOW);
+            digitalWrite(solenoidPin, HIGH);
+            delay(1000);
+            digitalWrite(solenoidPin, LOW);
+            break;
+        }
       }
     }
   }
