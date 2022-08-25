@@ -25,9 +25,10 @@
     uint16_t holdUpDelay;   // delay between steps (micros) when moving up to maintain load
     uint16_t eStopStepDelay;// delay between steps (micros) when performing an emergency stop
     uint16_t tolerance;     // the hysterisis around the set load point (in raw ADC units)
+    uint16_t iterations;    // how many interations of the test to run
     bool flipDirection;     // invert the direction of travel for the indenter head
     bool isThresholdTest;   // is the test a pain threshold/tolerance test?
-    uint16_t iterations;    // how many interations of the test to run
+    bool doVASscoring;      // do we need to report VAS scores?
   };
 
 
