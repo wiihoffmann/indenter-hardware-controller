@@ -7,37 +7,13 @@
 /**************************************************************************/
 
 
-#include <Arduino.h>
-#include "ADCController.h"
-#include "PWMStepperController.h"
-
 #ifndef __MEASUREMENT_CONTROLLER__
   #define __MEASUREMENT_CONTROLLER__
 
-
-  struct MeasurementParams{
-    int16_t preload;        // how much preload to apply (target ADC reading)
-    uint16_t preloadTime;   // how long to hold the preload (millis)
-    int16_t maxLoad;        // the max load to apply (target ADC reading)
-    uint16_t maxLoadTime;   // how long to hold the max load (millis)
-    uint16_t stepDelay;     // delay between steps (micros)
-    uint16_t holdDownDelay; // delay between steps (micros) when moving down to maintain load
-    uint16_t holdUpDelay;   // delay between steps (micros) when moving up to maintain load
-    uint16_t eStopStepDelay;// delay between steps (micros) when performing an emergency stop
-    uint16_t tolerance;     // the hysterisis around the set load point (in raw ADC units)
-    uint16_t iterations;    // how many interations of the test to run
-    bool flipDirection;     // invert the direction of travel for the indenter head
-    bool isThresholdTest;   // is the test a pain threshold/tolerance test?
-    bool doVASscoring;      // do we need to report VAS scores?
-  };
-
-
-  struct DataPoint{
-    int32_t displacement; // displacement of the indenter head
-    int16_t load;         // load on the indenter head (ADC reading)
-    uint8_t stage;        // the measurement stage
-  };
-
+  #include <Arduino.h>
+  #include "ADCController.h"
+  #include "PWMStepperController.h"
+  #include "Communicator.h"
 
   class MeasurementController{
     public:
@@ -79,6 +55,11 @@
        * Build a new measurement controller
        */
       MeasurementController();
+
+      /**
+       * performs a regular stiffness measurement 
+       */
+      static void runMeasurementTypeA(MeasurementParams &params, Communicator *comm);
 
       /**
        * Move the indenter head downward to achieve a given load.

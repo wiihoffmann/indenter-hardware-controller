@@ -8,12 +8,11 @@
 */
 /**************************************************************************/
 
-#include <Arduino.h>
-#include "MeasurementController.h"
-
 #ifndef __COMMUNICATOR__
   #define __COMMUNICATOR__
 	
+  #include <Arduino.h>
+
   #define ERROR_CODE 'E'
   #define EMERGENCY_STOP_CODE 'S'
   #define MOVE_X_AXIS_CODE 'X'
@@ -26,6 +25,35 @@
   #define RAW_MEASUREMENT_CODE 'M'
   #define CONTROLLER_READY_CODE 'R'
   #define NO_COMMAND_CODE 'K'
+
+  #define REGULAR_TEST_CODE 'R'             // regular test
+  #define PPT_TEST_CODE 'T'                 // PPI Test
+  #define PPI_TEST_CODE 'I'                 // PPT Test
+  #define TEMPORAL_SUMMATION_TEST_CODE 'S'  // temporalSummationTestCode
+
+
+  struct MeasurementParams{
+    int16_t preload;        // how much preload to apply (target ADC reading)
+    uint16_t preloadTime;   // how long to hold the preload (millis)
+    int16_t maxLoad;        // the max load to apply (target ADC reading)
+    uint16_t maxLoadTime;   // how long to hold the max load (millis)
+    uint16_t stepDelay;     // delay between steps (micros)
+    uint16_t holdDownDelay; // delay between steps (micros) when moving down to maintain load
+    uint16_t holdUpDelay;   // delay between steps (micros) when moving up to maintain load
+    uint16_t eStopStepDelay;// delay between steps (micros) when performing an emergency stop
+    uint16_t tolerance;     // the hysterisis around the set load point (in raw ADC units)
+    uint16_t iterations;    // how many interations of the test to run
+    bool flipDirection;     // invert the direction of travel for the indenter head
+    char testTypeCode;      // character code for the test type to run
+  };
+
+
+  struct DataPoint{
+    int32_t displacement; // displacement of the indenter head
+    int16_t load;         // load on the indenter head (ADC reading)
+    uint8_t stage;        // the measurement stage
+  };
+
 
   // union used for serializing the measurement params
 	union paramAdapter {

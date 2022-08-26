@@ -106,8 +106,7 @@ void MeasurementController::removeLoad(uint16_t stepDelay, uint8_t &stage){
 }
 
 
-void MeasurementController::performMeasurement(MeasurementParams params){
-  Communicator *comm = Communicator::getInstance();
+void MeasurementController::runMeasurementTypeA(MeasurementParams &params, Communicator *comm){
   uint8_t stage;
   int16_t load;
   char command;
@@ -178,6 +177,14 @@ void MeasurementController::performMeasurement(MeasurementParams params){
 
   // send the command to denote that the measurement is complete
   comm->sendCommand(MEASUREMENT_COMPLETE_CODE);
+}
+
+
+void MeasurementController::performMeasurement(MeasurementParams params){
+  Communicator *comm = Communicator::getInstance();
+  if(params.testTypeCode == REGULAR_TEST_CODE){
+    runMeasurementTypeA(params, comm);
+  }
 }
 
 
