@@ -106,7 +106,7 @@ void MeasurementController::removeLoad(uint16_t stepDelay, uint8_t &stage){
 }
 
 
-void MeasurementController::runMeasurementTypeA(MeasurementParams &params, Communicator *comm){
+void MeasurementController::runRegularTest(MeasurementParams &params, Communicator *comm){
   uint8_t stage;
   int16_t load;
   char command;
@@ -180,11 +180,40 @@ void MeasurementController::runMeasurementTypeA(MeasurementParams &params, Commu
 }
 
 
+void MeasurementController::runPPTTest(MeasurementParams &params, Communicator *comm){
+
+}
+
+
+void MeasurementController::runPPITest(MeasurementParams &params, Communicator *comm){
+
+}
+
+void MeasurementController::runTemporalSummationTest(MeasurementParams &params, Communicator *comm){
+
+}
+
 void MeasurementController::performMeasurement(MeasurementParams params){
   Communicator *comm = Communicator::getInstance();
-  if(params.testTypeCode == REGULAR_TEST_CODE){
-    runMeasurementTypeA(params, comm);
+  switch (params.testTypeCode){
+    case REGULAR_TEST_CODE:
+      runRegularTest(params, comm);
+      break;
+    case PPT_TEST_CODE:
+      runPPTTest(params, comm);
+      break;
+    case PPI_TEST_CODE:
+      runPPITest(params, comm);
+      break;
+    case TEMPORAL_SUMMATION_TEST_CODE:
+      runTemporalSummationTest(params, comm);
+      break;
+    default:
+      // send the command to denote that the measurement is complete
+      comm->sendCommand(MEASUREMENT_COMPLETE_CODE);
+      break;
   }
+
 }
 
 

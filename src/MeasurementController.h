@@ -57,9 +57,12 @@
       MeasurementController();
 
       /**
-       * performs a regular stiffness measurement 
+       * performs the various forms of test
        */
-      static void runMeasurementTypeA(MeasurementParams &params, Communicator *comm);
+      static void runRegularTest(MeasurementParams &params, Communicator *comm);
+      static void runPPITest(MeasurementParams &params, Communicator *comm);
+      static void runPPTTest(MeasurementParams &params, Communicator *comm);
+      static void runTemporalSummationTest(MeasurementParams &params, Communicator *comm);
 
       /**
        * Move the indenter head downward to achieve a given load.
