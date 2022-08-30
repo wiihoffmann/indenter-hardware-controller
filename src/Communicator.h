@@ -20,6 +20,8 @@
   #define MOVE_Z_AXIS_CODE 'Z'
   #define BEGIN_MEASUREMENT_CODE 'B'
   #define DATA_POINT_CODE 'D'
+  #define PEAK_LOAD_CODE 'P'
+  #define VAS_SCORE_CODE 'V'
   #define MEASUREMENT_COMPLETE_CODE 'C'
   #define NEW_TEST_BEGIN_CODE 'N'
   #define RAW_MEASUREMENT_CODE 'M'

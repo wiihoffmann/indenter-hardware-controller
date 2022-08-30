@@ -57,7 +57,9 @@
       MeasurementController();
 
       /**
-       * performs the various forms of test
+       * performs the various forms of tests
+       * @param params the test parameter struct
+       * @param comm the communicator to use for sending the data
        */
       static void runRegularTest(MeasurementParams &params, Communicator *comm);
       static void runPPITest(MeasurementParams &params, Communicator *comm);

@@ -175,26 +175,47 @@ void MeasurementController::runRegularTest(MeasurementParams &params, Communicat
     emergencyStop(params.eStopStepDelay);
   }
 
-  // send the command to denote that the measurement is complete
-  comm->sendCommand(MEASUREMENT_COMPLETE_CODE);
 }
 
 
 void MeasurementController::runPPTTest(MeasurementParams &params, Communicator *comm){
-
+  digitalWrite(solenoidPin, HIGH);
+  delay(250);
+  digitalWrite(solenoidPin, LOW);
 }
 
 
 void MeasurementController::runPPITest(MeasurementParams &params, Communicator *comm){
+  digitalWrite(solenoidPin, HIGH);
+  delay(250);
+  digitalWrite(solenoidPin, LOW);
+  delay(250);  
+  digitalWrite(solenoidPin, HIGH);
+  delay(250);
+  digitalWrite(solenoidPin, LOW);
 
 }
+
 
 void MeasurementController::runTemporalSummationTest(MeasurementParams &params, Communicator *comm){
-
+  digitalWrite(solenoidPin, HIGH);
+  delay(250);
+  digitalWrite(solenoidPin, LOW);
+  delay(250);  
+  digitalWrite(solenoidPin, HIGH);
+  delay(250);
+  digitalWrite(solenoidPin, LOW);
+  delay(250);  
+  digitalWrite(solenoidPin, HIGH);
+  delay(250);
+  digitalWrite(solenoidPin, LOW);
 }
+
 
 void MeasurementController::performMeasurement(MeasurementParams params){
   Communicator *comm = Communicator::getInstance();
+  
+  // switch on the kind of measurement we need to perform
   switch (params.testTypeCode){
     case REGULAR_TEST_CODE:
       runRegularTest(params, comm);
@@ -208,12 +229,10 @@ void MeasurementController::performMeasurement(MeasurementParams params){
     case TEMPORAL_SUMMATION_TEST_CODE:
       runTemporalSummationTest(params, comm);
       break;
-    default:
-      // send the command to denote that the measurement is complete
-      comm->sendCommand(MEASUREMENT_COMPLETE_CODE);
-      break;
   }
-
+  
+  // send the command to denote that the measurement is complete
+  comm->sendCommand(MEASUREMENT_COMPLETE_CODE);
 }
 
 
