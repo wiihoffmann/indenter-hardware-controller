@@ -17,8 +17,8 @@
 */
 
 char Communicator::validCommands[] = {ERROR_CODE, EMERGENCY_STOP_CODE, MOVE_X_AXIS_CODE, MOVE_Y_AXIS_CODE, MOVE_Z_AXIS_CODE,
-                                      BEGIN_MEASUREMENT_CODE, DATA_POINT_CODE, MEASUREMENT_COMPLETE_CODE, RAW_MEASUREMENT_CODE,
-                                      CONTROLLER_READY_CODE,NO_COMMAND_CODE, PEAK_LOAD_CODE, VAS_SCORE_CODE};
+                                      BEGIN_MEASUREMENT_CODE, REGULAR_DATA_POINT_CODE, MEASUREMENT_COMPLETE_CODE, RAW_MEASUREMENT_CODE,
+                                      CONTROLLER_READY_CODE,NO_COMMAND_CODE};
 
 
 Communicator* Communicator::getInstance(){
@@ -35,7 +35,7 @@ Communicator::Communicator(){
 
 void Communicator::sendDataPoint(int32_t displacement, int16_t load, uint8_t measurementStage){
   // pack values into data point adapter for serialization
-  dataPointAdapter dp;
+  DataPointAdapter dp;
   dp.point.displacement = displacement;
   dp.point.load = load;
   dp.point.stage = measurementStage;
