@@ -10,6 +10,8 @@ volatile bool MeasurementController::dataReady;
 uint32_t MeasurementController::holdStartTime;
 uint8_t MeasurementController::solenoidPin;
 uint8_t MeasurementController::vacuumPin;
+uint8_t MeasurementController::VASPin;
+uint8_t MeasurementController::indicatorPin;
 
 
 MeasurementController* MeasurementController::getInstance(){
@@ -23,12 +25,16 @@ MeasurementController::MeasurementController(){
 }
 
 
-void MeasurementController::setUpController(ADCController *adc, PWMStepperController *zAxis, uint8_t eStopInterruptPin, uint8_t solenoidPin, uint8_t vacuumPin){
+void MeasurementController::setUpController(ADCController *adc, PWMStepperController *zAxis, uint8_t eStopInterruptPin, uint8_t solenoidPin, uint8_t vacuumPin, uint8_t VASPin, uint8_t indicatorButtonPin){
   MeasurementController::adc =  adc;
   MeasurementController::zAxis = zAxis;
   MeasurementController::solenoidPin = solenoidPin;
   MeasurementController::vacuumPin = vacuumPin;
+  MeasurementController::VASPin = VASPin;
+  MeasurementController::indicatorPin = indicatorButtonPin;
   
+  pinMode(indicatorPin, INPUT_PULLUP);
+
   // set up the vacuum pump/gripper
   pinMode(solenoidPin, OUTPUT);
   pinMode(vacuumPin, OUTPUT);
@@ -50,10 +56,6 @@ void MeasurementController::emergencyStop(uint16_t stepDelay){
   digitalWrite(vacuumPin, LOW);
   // emergency retract the indenter head
   zAxis->emergencyStop(stepDelay);
-  // release gripper
-  digitalWrite(solenoidPin, HIGH);
-  delay(1000);
-  digitalWrite(solenoidPin, LOW);
 }
 
 
@@ -69,11 +71,11 @@ void MeasurementController::applyLoad(int16_t targetLoad, uint16_t stepDelay, in
 }
 
 
-void MeasurementController::holdLoad(int16_t targetLoad, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage){
+void MeasurementController::holdLoad(int16_t targetLoad, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage, boolean runVacuum){
   if(holdStartTime == 0){
     holdStartTime = millis();
     // turn on the vacuum 
-    if(stage == 1) digitalWrite(vacuumPin, HIGH);
+    if(runVacuum) digitalWrite(vacuumPin, HIGH);
   }
 
   // if the load is above the upper limit and we are not already moving up -> move up;
@@ -129,6 +131,7 @@ void MeasurementController::runRegularTest(MeasurementParams &params, Communicat
     while(!doneMeasurement && !eStop){
       command = comm->getCommand();
       if (command == EMERGENCY_STOP_CODE) eStop = true;
+      if (digitalRead(indicatorPin) == LOW) eStop = true;
       
       // if the ADC has signalled that data is available, process it.
       if(dataReady){
@@ -142,13 +145,13 @@ void MeasurementController::runRegularTest(MeasurementParams &params, Communicat
             applyLoad(params.preload, params.stepDelay, load, stage);
             break;
           case 1: // preload hold
-            holdLoad(params.preload, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.preloadTime, load, stage);
+            holdLoad(params.preload, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.preloadTime, load, stage, true);
             break;
           case 2: // main load approach
             applyLoad(params.maxLoad, params.stepDelay, load, stage);     
             break;
           case 3: // main load hold
-            holdLoad(params.maxLoad, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.maxLoadTime, load, stage);   
+            holdLoad(params.maxLoad, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.maxLoadTime, load, stage, false);   
             break;
           case 4: // retract
             removeLoad(params.stepDelay, stage);
@@ -173,42 +176,211 @@ void MeasurementController::runRegularTest(MeasurementParams &params, Communicat
   // perform an E-stop if the flag is set
   if(eStop){
     emergencyStop(params.eStopStepDelay);
+    // release gripper
+    digitalWrite(solenoidPin, HIGH);
+    delay(1000);
+    digitalWrite(solenoidPin, LOW);
   }
 
 }
 
 
 void MeasurementController::runPPTTest(MeasurementParams &params, Communicator *comm){
-  digitalWrite(solenoidPin, HIGH);
-  delay(250);
-  digitalWrite(solenoidPin, LOW);
+  uint8_t stage;
+  int16_t load;
+  char command;
+  eStop = false;
+  boolean indicatorPressed;
+
+  // home the zAxis and start the ADC conversion process
+  zAxis->invertDirection(params.flipDirection);
+  zAxis->resetDisplacement();
+  adc->tare();
+
+  
+  for(uint16_t i = 0; i < params.iterations && eStop == false; i++){
+    doneMeasurement = false;
+    indicatorPressed = false;
+    stage = 0;
+    
+    if(i > 0){
+      delay(params.preloadTime);
+      comm->sendCommand(NEW_TEST_BEGIN_CODE);
+    }
+    adc->startADC([](){dataReady = true;});
+
+    // loop until the measurement completes, or the emergency stop flag is set
+    while(!doneMeasurement && !eStop){
+      command = comm->getCommand();
+      if (command == EMERGENCY_STOP_CODE) eStop = true;
+      if(digitalRead(indicatorPin) == LOW && indicatorPressed == false){
+        indicatorPressed = true;
+        stage = 1;
+      }
+
+      // if the ADC has signalled that data is available, process it.
+      if(dataReady){
+        dataReady = false;
+        load = adc->getLoad();
+        comm->sendDataPoint(zAxis->getDisplacement(), load, stage);      
+
+        // perform the relavent action for the measurement stage we are on
+        switch(stage){
+          case 0: // main load approach
+            applyLoad(params.maxLoad, params.stepDelay, load, stage);     
+            break;
+          case 1: // retract
+            removeLoad(params.stepDelay, stage);
+            break;
+          case 2: //done
+            adc->stopADC();
+            doneMeasurement = true; 
+            break;
+        }
+      }
+    }
+  }
+
+  // send a final data point with number of samples obtained, and total measurement time (millis)
+  // comm->sendDataPoint(samples, millis()-start, 99);
+  
+  // perform an E-stop if the flag is set
+  if(eStop){
+    emergencyStop(params.eStopStepDelay);
+  }
 }
 
 
 void MeasurementController::runPPITest(MeasurementParams &params, Communicator *comm){
-  digitalWrite(solenoidPin, HIGH);
-  delay(250);
-  digitalWrite(solenoidPin, LOW);
-  delay(250);  
-  digitalWrite(solenoidPin, HIGH);
-  delay(250);
-  digitalWrite(solenoidPin, LOW);
+  uint8_t stage;
+  int16_t load;
+  char command;
+  eStop = false;
+
+  // home the zAxis and start the ADC conversion process
+  zAxis->invertDirection(params.flipDirection);
+  zAxis->resetDisplacement();
+  adc->tare();
+
+  
+  for(uint16_t i = 0; i < params.iterations && eStop == false; i++){
+    doneMeasurement = false;
+    holdStartTime = 0;
+    stage = 0;
+    if(i > 0)comm->sendCommand(NEW_TEST_BEGIN_CODE);
+    adc->startADC([](){dataReady = true;});
+
+    // loop until the measurement completes, or the emergency stop flag is set
+    while(!doneMeasurement && !eStop){
+      command = comm->getCommand();
+      if (command == EMERGENCY_STOP_CODE) eStop = true;
+      if(digitalRead(indicatorPin) == LOW) eStop = true;
+
+      // if the ADC has signalled that data is available, process it.
+      if(dataReady){
+        dataReady = false;
+        load = adc->getLoad();
+        comm->sendDataPoint(zAxis->getDisplacement(), load, stage);      
+
+        // perform the relavent action for the measurement stage we are on
+        switch(stage){
+          case 0: // main load approach
+            applyLoad(params.maxLoad, params.stepDelay, load, stage);     
+            break;
+          case 1: // preload hold
+            holdLoad(params.maxLoad, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.maxLoadTime, load, stage, false);
+            break;
+          case 2: // retract
+            removeLoad(params.stepDelay, stage);
+            break;
+          case 3: //done
+            adc->stopADC();
+            doneMeasurement = true; 
+            break;
+        }
+      }
+    }
+    // wait for button press to register VAS score
+    while(digitalRead(indicatorPin) && !eStop){
+      command = comm->getCommand();
+      if (command == EMERGENCY_STOP_CODE) eStop = true;
+    }
+
+    // TODO: send VAS score here
+
+    // wait for button to be released, and wait for debounce
+    while(!digitalRead(indicatorPin) && !eStop);
+    delay(50);
+
+  }
+
+  // send a final data point with number of samples obtained, and total measurement time (millis)
+  // comm->sendDataPoint(samples, millis()-start, 99);
+  
+  // perform an E-stop if the flag is set
+  if(eStop){
+    emergencyStop(params.eStopStepDelay);
+  }
 
 }
 
 
 void MeasurementController::runTemporalSummationTest(MeasurementParams &params, Communicator *comm){
-  digitalWrite(solenoidPin, HIGH);
-  delay(250);
-  digitalWrite(solenoidPin, LOW);
-  delay(250);  
-  digitalWrite(solenoidPin, HIGH);
-  delay(250);
-  digitalWrite(solenoidPin, LOW);
-  delay(250);  
-  digitalWrite(solenoidPin, HIGH);
-  delay(250);
-  digitalWrite(solenoidPin, LOW);
+  uint8_t stage;
+  int16_t load;
+  char command;
+  eStop = false;
+
+  // home the zAxis and start the ADC conversion process
+  zAxis->invertDirection(params.flipDirection);
+  zAxis->resetDisplacement();
+  adc->tare();
+  adc->startADC([](){dataReady = true;});
+  
+  for(uint16_t i = 0; i < params.iterations && eStop == false; i++){
+    doneMeasurement = false;
+    stage = 0;
+    holdStartTime = 0;    
+
+    // loop until the measurement completes, or the emergency stop flag is set
+    while(!doneMeasurement && !eStop){
+      command = comm->getCommand();
+      if (command == EMERGENCY_STOP_CODE) eStop = true;
+      if (digitalRead(indicatorPin) == LOW) eStop = true;
+      
+      // if the ADC has signalled that data is available, process it.
+      if(dataReady){
+        dataReady = false;
+        load = adc->getLoad();
+        
+        // TODO: send VAS score here as well!
+        comm->sendDataPoint(zAxis->getDisplacement(), load, stage);      
+
+        // perform the relavent action for the measurement stage we are on
+        switch(stage){
+          case 0: // main load approach
+            applyLoad(params.maxLoad, params.stepDelay, load, stage);     
+            break;
+          case 1: // retract
+            removeLoad(params.stepDelay, stage);
+            break;
+          case 2: //done iteration
+            doneMeasurement = true; 
+            break;
+        }
+      }
+    }
+  }
+
+  adc->stopADC();
+
+  // send a final data point with number of samples obtained, and total measurement time (millis)
+  // comm->sendDataPoint(samples, millis()-start, 99);
+  
+  // perform an E-stop if the flag is set
+  if(eStop){
+    emergencyStop(params.eStopStepDelay);
+  }
 }
 
 

@@ -33,7 +33,7 @@
        * @param zAxis a pointer to the zAxis stepper
        * @param eStopInterruptPin the pin the e-stop button is attached to
        */
-      static void setUpController(ADCController *adc, PWMStepperController *zAxis, uint8_t eStopInterruptPin, uint8_t solenoidPin, uint8_t vacuumPin);
+      static void setUpController(ADCController *adc, PWMStepperController *zAxis, uint8_t eStopInterruptPin, uint8_t solenoidPin, uint8_t vacuumPin, uint8_t VASPin, uint8_t indicatorButtonPin);
       
       /**
        * Starts to perform the stiffness measurement
@@ -50,6 +50,8 @@
       static uint32_t holdStartTime;      // time (millis) when a hold was initiated
       static uint8_t solenoidPin;
       static uint8_t vacuumPin;
+      static uint8_t VASPin;
+      static uint8_t indicatorPin;
 
       /**
        * Build a new measurement controller
@@ -84,8 +86,9 @@
        * @param holdTime how long to hold the given load (millis)
        * @param loadActual the actual load reading from the load call (ADC reading units)
        * @param stage the current measurement stage. Increments after load has been held.
+       * @param runVacuum should the vacuum pump be run during the hold?
        */
-      static void holdLoad(int16_t targetLoad, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage);
+      static void holdLoad(int16_t targetLoad, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage, boolean runVacuum);
       
       /**
        * Retracts the indenter head, removing the applied load.

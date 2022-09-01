@@ -16,6 +16,7 @@
 #define SOLENOID_PIN 10
 #define VACUUM_PIN 11
 #define VAS_SLIDER_PIN A0
+#define INDICATOR_BUTTON_PIN 12
 
 Adafruit_ADS1115 ads; /* Use this for the 16-bit version */
 // Adafruit_ADS1015 ads;     /* Use this for the 12-bit version */
@@ -50,7 +51,7 @@ void setup(void){
   adc = new ADCController(ADC_INTERRUPT_PIN, ads);
 
   indenter = MeasurementController::getInstance();
-  indenter->setUpController(adc, zAxisPWM, E_STOP_INTERRUPT_PIN, SOLENOID_PIN, VACUUM_PIN);
+  indenter->setUpController(adc, zAxisPWM, E_STOP_INTERRUPT_PIN, SOLENOID_PIN, VACUUM_PIN, VAS_SLIDER_PIN, INDICATOR_BUTTON_PIN);
 
   // tell the host that we are ready to accept commands
   comm->sendCommand(CONTROLLER_READY_CODE);
