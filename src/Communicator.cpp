@@ -46,6 +46,33 @@ void Communicator::sendDataPoint(int32_t displacement, int16_t load, uint8_t mea
 }
 
 
+// void Communicator::sendDataPointWithButtonState(int32_t displacement, int16_t load, uint8_t measurementStage, boolean buttonState){
+//   // pack values into data point adapter for serialization
+//   DataPointWithButtonStateAdapter dp;
+//   dp.point.displacement = displacement;
+//   dp.point.load = load;
+//   dp.point.stage = measurementStage;
+//   dp.point.buttonState = buttonState;
+  
+//   // write the data point to the serial connection
+//   Serial.write("*b");
+//   Serial.write(dp.pointArray, sizeof(DataPointWithButtonState));
+// }
+      
+  
+void Communicator::sendDataPointWithVAS(int32_t displacement, int16_t load, uint8_t measurementStage, uint16_t VASScore){
+  // pack values into data point adapter for serialization
+  DataPointWithVASAdapter dp;
+  dp.point.displacement = displacement;
+  dp.point.load = load;
+  dp.point.stage = measurementStage;
+  dp.point.VASScore = VASScore;
+  
+  // write the data point to the serial connection
+  Serial.write("*V");
+  Serial.write(dp.pointArray, sizeof(DataPointWithVAS));
+}
+
 
 void Communicator::sendCommand(char command, int16_t data){
   // serialize the command and int

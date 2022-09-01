@@ -188,6 +188,7 @@ void MeasurementController::runRegularTest(MeasurementParams &params, Communicat
 void MeasurementController::runPPTTest(MeasurementParams &params, Communicator *comm){
   uint8_t stage;
   int16_t load;
+  int16_t maxLoad;
   char command;
   eStop = false;
   boolean indicatorPressed;
@@ -201,6 +202,7 @@ void MeasurementController::runPPTTest(MeasurementParams &params, Communicator *
   for(uint16_t i = 0; i < params.iterations && eStop == false; i++){
     doneMeasurement = false;
     indicatorPressed = false;
+    maxLoad = 0;
     stage = 0;
     
     if(i > 0){
@@ -222,7 +224,9 @@ void MeasurementController::runPPTTest(MeasurementParams &params, Communicator *
       if(dataReady){
         dataReady = false;
         load = adc->getLoad();
-        comm->sendDataPoint(zAxis->getDisplacement(), load, stage);      
+        comm->sendDataPoint(zAxis->getDisplacement(), load, stage);
+        
+        if(load > maxLoad) maxLoad = load;  
 
         // perform the relavent action for the measurement stage we are on
         switch(stage){
@@ -239,6 +243,8 @@ void MeasurementController::runPPTTest(MeasurementParams &params, Communicator *
         }
       }
     }
+    comm->sendCommand(MAX_LOAD_CODE, maxLoad);
+
   }
 
   // send a final data point with number of samples obtained, and total measurement time (millis)
@@ -252,6 +258,7 @@ void MeasurementController::runPPTTest(MeasurementParams &params, Communicator *
 
 
 void MeasurementController::runPPITest(MeasurementParams &params, Communicator *comm){
+  uint32_t delayStart;
   uint8_t stage;
   int16_t load;
   char command;
@@ -306,11 +313,29 @@ void MeasurementController::runPPITest(MeasurementParams &params, Communicator *
       if (command == EMERGENCY_STOP_CODE) eStop = true;
     }
 
-    // TODO: send VAS score here
+    // async delay for debounce
+    delayStart = millis();
+    while(millis() < delayStart + 50){ // 50ms debounce
+      command = comm->getCommand();
+      if (command == EMERGENCY_STOP_CODE) eStop = true;
+    }
+
+
+    comm->sendCommand(SINGLE_VAS_SCORE_CODE, 1234);
+
 
     // wait for button to be released, and wait for debounce
-    while(!digitalRead(indicatorPin) && !eStop);
-    delay(50);
+    while(!digitalRead(indicatorPin) && !eStop){
+      command = comm->getCommand();
+      if (command == EMERGENCY_STOP_CODE) eStop = true;
+    };
+    
+    // async delay for debounce
+    delayStart = millis();
+    while(millis() < delayStart + 50){ // 50ms debounce
+      command = comm->getCommand();
+      if (command == EMERGENCY_STOP_CODE) eStop = true;
+    }
 
   }
 

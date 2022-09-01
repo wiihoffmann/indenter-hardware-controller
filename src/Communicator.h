@@ -20,9 +20,9 @@
   #define MOVE_Z_AXIS_CODE 'Z'
   #define BEGIN_MEASUREMENT_CODE 'B'
   #define REGULAR_DATA_POINT_CODE 'D'
-  #define DATA_POINT_WITH_BUTTON_STATE_CODE 'b'
+  #define MAX_LOAD_CODE 'b'
   #define DATA_POINT_WITH_VAS_CODE 'V'
-  #define SINGLE_VAS_SCORE_CODE 'V'
+  #define SINGLE_VAS_SCORE_CODE 'v'
   #define MEASUREMENT_COMPLETE_CODE 'C'
   #define NEW_TEST_BEGIN_CODE 'N'
   #define RAW_MEASUREMENT_CODE 'M'
@@ -66,14 +66,6 @@
   };
 
 
-  struct DataPointWithButtonState{
-    int32_t displacement; // displacement of the indenter head
-    int16_t load;         // load on the indenter head (ADC reading)
-    boolean buttonState;  // the state of the indicator button
-    uint8_t stage;        // the measurement stage
-  };
-
-
   // union used for serializing the measurement params
 	union paramAdapter {
 		MeasurementParams parameters;
@@ -95,11 +87,18 @@
 	};
 
 
-  // union used for serializing data points
-	union DataPointWithButtonStateAdapter {
-		DataPointWithButtonState point;
-		byte pointArray[sizeof(DataPointWithButtonState)];
-	};
+  // struct DataPointWithButtonState{
+  //   int32_t displacement; // displacement of the indenter head
+  //   int16_t load;         // load on the indenter head (ADC reading)
+  //   boolean buttonState;  // the state of the indicator button
+  //   uint8_t stage;        // the measurement stage
+  // };
+
+  // // union used for serializing data points
+	// union DataPointWithButtonStateAdapter {
+	// 	DataPointWithButtonState point;
+	// 	byte pointArray[sizeof(DataPointWithButtonState)];
+	// };
 
 
 	class Communicator{
@@ -125,6 +124,8 @@
        * @param measurementStage the stage the measurement is in
        */
       void sendDataPoint(int32_t displacement, int16_t load, uint8_t measurementStage);
+      void sendDataPointWithVAS(int32_t displacement, int16_t load, uint8_t measurementStage, uint16_t VASScore);
+      
       
       /**
        * Send the command denoting the end of the measurement data stream.
