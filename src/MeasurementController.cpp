@@ -321,7 +321,7 @@ void MeasurementController::runPPITest(MeasurementParams &params, Communicator *
     }
 
 
-    comm->sendCommand(SINGLE_VAS_SCORE_CODE, 1234);
+    comm->sendCommand(SINGLE_VAS_SCORE_CODE, analogRead(VASPin));
 
 
     // wait for button to be released, and wait for debounce
