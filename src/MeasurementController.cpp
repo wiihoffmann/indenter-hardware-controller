@@ -378,8 +378,7 @@ void MeasurementController::runTemporalSummationTest(MeasurementParams &params, 
         dataReady = false;
         load = adc->getLoad();
         
-        // TODO: send VAS score here as well!
-        comm->sendDataPoint(zAxis->getDisplacement(), load, stage);      
+        comm->sendDataPointWithVAS(zAxis->getDisplacement(), load, stage, analogRead(VASPin));
 
         // perform the relavent action for the measurement stage we are on
         switch(stage){

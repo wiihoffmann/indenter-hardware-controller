@@ -61,8 +61,8 @@
   struct DataPointWithVAS{
     int32_t displacement; // displacement of the indenter head
     int16_t load;         // load on the indenter head (ADC reading)
-    int16_t VASScore;     // the VAS score
     uint8_t stage;        // the measurement stage
+    int16_t VASScore;     // the VAS score
   };
 
 
