@@ -64,6 +64,13 @@
        * @return the raw (untared) reading from the ADC.
        */
       int16_t getRawReading();
+
+
+      /**
+       * Get a raw voltage reading from the ADC.
+       * @return the voltage seen at the ADC in millivolts
+       */
+      int16_t getVoltageReading();
   };
 
 #endif

@@ -18,7 +18,7 @@
 
 char Communicator::validCommands[] = {ERROR_CODE, EMERGENCY_STOP_CODE, MOVE_X_AXIS_CODE, MOVE_Y_AXIS_CODE, MOVE_Z_AXIS_CODE,
                                       BEGIN_MEASUREMENT_CODE, REGULAR_DATA_POINT_CODE, MEASUREMENT_COMPLETE_CODE, RAW_MEASUREMENT_CODE,
-                                      CONTROLLER_READY_CODE,NO_COMMAND_CODE};
+                                      RAW_MEASUREMENT_VOLTS_CODE, CONTROLLER_READY_CODE,NO_COMMAND_CODE};
 
 
 Communicator* Communicator::getInstance(){

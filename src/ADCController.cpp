@@ -71,3 +71,8 @@ int16_t  ADCController::getRawReading(){
   return ads->readADC_Differential_0_1();
 }
 
+
+int16_t ADCController::getVoltageReading(){
+  return (int16_t)(ads->computeVolts(getRawReading())*1000);
+}
+

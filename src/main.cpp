@@ -99,7 +99,12 @@ void loop(void){
       
       case RAW_MEASUREMENT_CODE: // request for raw measurement
         comm->sendCommand(RAW_MEASUREMENT_CODE, adc->getRawReading());
-      
+        break;
+
+      case RAW_MEASUREMENT_VOLTS_CODE: //request a voltage reading from the ADC
+        comm->sendCommand(RAW_MEASUREMENT_VOLTS_CODE, adc->getVoltageReading());
+        break;
+
       case ERROR_CODE: // error code
         // TODO: handle error
         break;
