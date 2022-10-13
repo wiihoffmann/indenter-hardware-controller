@@ -243,8 +243,9 @@ void MeasurementController::runPPTTest(MeasurementParams &params, Communicator *
         }
       }
     }
-    comm->sendCommand(MAX_LOAD_CODE, maxLoad);
-
+    if(!eStop){
+      comm->sendCommand(MAX_LOAD_CODE, maxLoad);
+    }
   }
 
   // send a final data point with number of samples obtained, and total measurement time (millis)
@@ -315,14 +316,14 @@ void MeasurementController::runPPITest(MeasurementParams &params, Communicator *
 
     // async delay for debounce
     delayStart = millis();
-    while(millis() < delayStart + 50){ // 50ms debounce
+    while(millis() < delayStart + 50 && !eStop){ // 50ms debounce
       command = comm->getCommand();
       if (command == EMERGENCY_STOP_CODE) eStop = true;
     }
 
-
-    comm->sendCommand(SINGLE_VAS_SCORE_CODE, analogRead(VASPin));
-
+    if(!eStop){
+      comm->sendCommand(SINGLE_VAS_SCORE_CODE, analogRead(VASPin));
+    }
 
     // wait for button to be released, and wait for debounce
     while(!digitalRead(indicatorPin) && !eStop){
