@@ -86,9 +86,10 @@
        * @param holdTime how long to hold the given load (millis)
        * @param loadActual the actual load reading from the load call (ADC reading units)
        * @param stage the current measurement stage. Increments after load has been held.
-       * @param runVacuum should the vacuum pump be run during the hold?
+       * @param runVacuum should the vacuum pump be turned on during the hold?
+       * @param stopVacuum should the vacuum be turned off after the hold?
        */
-      static void holdLoad(int16_t targetLoad, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage, boolean runVacuum);
+      static void holdLoad(int16_t targetLoad, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage, boolean runVacuum, boolean stopVacuum);
       
       /**
        * Retracts the indenter head, removing the applied load.

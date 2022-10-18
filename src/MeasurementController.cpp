@@ -71,7 +71,7 @@ void MeasurementController::applyLoad(int16_t targetLoad, uint16_t stepDelay, in
 }
 
 
-void MeasurementController::holdLoad(int16_t targetLoad, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage, boolean runVacuum){
+void MeasurementController::holdLoad(int16_t targetLoad, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage, boolean runVacuum, boolean stopVacuum){
   if(holdStartTime == 0){
     holdStartTime = millis();
     // turn on the vacuum 
@@ -89,7 +89,7 @@ void MeasurementController::holdLoad(int16_t targetLoad, uint16_t tolerance, uin
   if(millis() - holdStartTime >= holdTime){
     zAxis->stopMoving();
     // turn off the vacuum 
-    digitalWrite(vacuumPin, LOW);
+    if(stopVacuum) digitalWrite(vacuumPin, LOW);
     holdStartTime = 0;
     stage ++;
   }
@@ -145,13 +145,13 @@ void MeasurementController::runRegularTest(MeasurementParams &params, Communicat
             applyLoad(params.preload, params.stepDelay, load, stage);
             break;
           case 1: // preload hold
-            holdLoad(params.preload, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.preloadTime, load, stage, true);
+            holdLoad(params.preload, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.preloadTime, load, stage, true, !params.constantVacuum);
             break;
           case 2: // main load approach
             applyLoad(params.maxLoad, params.stepDelay, load, stage);     
             break;
           case 3: // main load hold
-            holdLoad(params.maxLoad, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.maxLoadTime, load, stage, false);   
+            holdLoad(params.maxLoad, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.maxLoadTime, load, stage, false, !params.constantVacuum);   
             break;
           case 4: // retract
             removeLoad(params.stepDelay, stage);
@@ -296,7 +296,7 @@ void MeasurementController::runPPITest(MeasurementParams &params, Communicator *
             applyLoad(params.maxLoad, params.stepDelay, load, stage);     
             break;
           case 1: // preload hold
-            holdLoad(params.maxLoad, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.maxLoadTime, load, stage, false);
+            holdLoad(params.maxLoad, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.maxLoadTime, load, stage, false, false);
             break;
           case 2: // retract
             removeLoad(params.stepDelay, stage);
@@ -429,7 +429,12 @@ void MeasurementController::performMeasurement(MeasurementParams params){
   }
   
   // send the command to denote that the measurement is complete
-  comm->sendCommand(MEASUREMENT_COMPLETE_CODE);
+  if(eStop){
+    comm->sendCommand(EMERGENCY_STOP_CODE);
+  }
+  else {
+    comm->sendCommand(MEASUREMENT_COMPLETE_CODE);
+  }
 }
 
 

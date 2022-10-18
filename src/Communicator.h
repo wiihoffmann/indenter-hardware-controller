@@ -49,6 +49,7 @@
     uint16_t iterations;    // how many interations of the test to run
     bool flipDirection;     // invert the direction of travel for the indenter head
     char testTypeCode;      // character code for the test type to run
+    bool constantVacuum;    // should the vacuum be run constantly during a regular test?
   };
 
 
@@ -86,20 +87,6 @@
 		DataPointWithVAS point;
 		byte pointArray[sizeof(DataPointWithVAS)];
 	};
-
-
-  // struct DataPointWithButtonState{
-  //   int32_t displacement; // displacement of the indenter head
-  //   int16_t load;         // load on the indenter head (ADC reading)
-  //   boolean buttonState;  // the state of the indicator button
-  //   uint8_t stage;        // the measurement stage
-  // };
-
-  // // union used for serializing data points
-	// union DataPointWithButtonStateAdapter {
-	// 	DataPointWithButtonState point;
-	// 	byte pointArray[sizeof(DataPointWithButtonState)];
-	// };
 
 
 	class Communicator{
