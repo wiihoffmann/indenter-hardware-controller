@@ -44,7 +44,7 @@
     private:
       static ADCController *adc;
       static PWMStepperController *zAxis;
-      static bool eStop;                  // flag set to true when performing an e-stop
+      static volatile bool eStop;          // flag set to true when performing an e-stop
       static volatile bool dataReady;     // flag set to true when data from ADC is ready
       static bool doneMeasurement;        // flag set to true when the measurement completes
       static uint32_t holdStartTime;      // time (millis) when a hold was initiated

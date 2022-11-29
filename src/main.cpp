@@ -33,7 +33,7 @@ Communicator *comm;
 char command;           // the last command we received from the host
 uint32_t lastBlink = 0; // last time we blinked the built-in LED
 int16_t stepRate;       // how fast to move the stepper
-
+MeasurementParams params;
 
 void setup(void){
   pinMode(LED_BUILTIN, OUTPUT);
@@ -94,7 +94,8 @@ void loop(void){
         break;
       
       case BEGIN_MEASUREMENT_CODE: // begin a measurement
-        indenter->performMeasurement(comm->receiveMeasurementParams());
+        params = comm->receiveMeasurementParams();
+        indenter->performMeasurement(params);
         break;
       
       case RAW_MEASUREMENT_CODE: // request for raw measurement

@@ -4,7 +4,7 @@
 // initialize static class variables
 ADCController *MeasurementController::adc;
 PWMStepperController *MeasurementController::zAxis;
-bool MeasurementController::eStop;
+volatile bool MeasurementController::eStop;
 bool MeasurementController::doneMeasurement;
 volatile bool MeasurementController::dataReady;
 uint32_t MeasurementController::holdStartTime;
