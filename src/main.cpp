@@ -94,6 +94,7 @@ void loop(void){
         break;
       
       case BEGIN_MEASUREMENT_CODE: // begin a measurement
+        digitalWrite(LED_BUILTIN, LOW);
         params = comm->receiveMeasurementParams();
         indenter->performMeasurement(params);
         break;

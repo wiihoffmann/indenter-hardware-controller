@@ -43,7 +43,10 @@ void MeasurementController::setUpController(ADCController *adc, PWMStepperContro
 
   // set up the emergency stop interrupt
   pinMode(eStopInterruptPin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(eStopInterruptPin), [](){MeasurementController::eStop = true;}, FALLING);
+  attachInterrupt(digitalPinToInterrupt(eStopInterruptPin), [](){
+     MeasurementController::eStop = true; 
+     digitalWrite(LED_BUILTIN, HIGH); 
+     }, FALLING);
 }
 
 
