@@ -4,7 +4,7 @@
 // initialize static class variables
 ADCController *MeasurementController::adc;
 PWMStepperController *MeasurementController::zAxis;
-bool MeasurementController::eStop;
+volatile bool MeasurementController::eStop;
 bool MeasurementController::doneMeasurement;
 volatile bool MeasurementController::dataReady;
 uint32_t MeasurementController::holdStartTime;
@@ -43,7 +43,10 @@ void MeasurementController::setUpController(ADCController *adc, PWMStepperContro
 
   // set up the emergency stop interrupt
   pinMode(eStopInterruptPin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(eStopInterruptPin), [](){MeasurementController::eStop = true;}, FALLING);
+  attachInterrupt(digitalPinToInterrupt(eStopInterruptPin), [](){
+     MeasurementController::eStop = true; 
+     digitalWrite(LED_BUILTIN, HIGH); 
+     }, FALLING);
 }
 
 
