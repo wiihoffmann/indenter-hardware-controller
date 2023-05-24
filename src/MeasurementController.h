@@ -53,6 +53,8 @@
       static uint8_t VASPin;
       static uint8_t indicatorPin;
 
+      static int16_t integral; // var for PID control of maintaining a load
+
       /**
        * Build a new measurement controller
        */
@@ -89,7 +91,7 @@
        * @param runVacuum should the vacuum pump be turned on during the hold?
        * @param stopVacuum should the vacuum be turned off after the hold?
        */
-      static void holdLoad(int16_t targetLoad, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage, boolean runVacuum, boolean stopVacuum);
+      static void holdLoad(int16_t targetLoad, uint16_t tolerance, float holdKp, float holdKi, uint16_t minStepDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage, boolean runVacuum, boolean stopVacuum);
       
       /**
        * Retracts the indenter head, removing the applied load.
