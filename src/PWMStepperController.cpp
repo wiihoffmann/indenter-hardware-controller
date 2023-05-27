@@ -76,7 +76,7 @@ void PWMStepperController::emergencyStop(uint16_t stepDelay){
   if(displacement > 0){
     startMovingUp(stepDelay);
     while(displacement > 0);
-    stopMoving();
   }
+  stopMoving();
 }
 
