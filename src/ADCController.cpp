@@ -1,9 +1,10 @@
 #include "ADCController.h"
 
 
-ADCController::ADCController(uint8_t interruptPin, Adafruit_ADS1115 &ads){
+ADCController::ADCController(uint8_t interruptPin, Adafruit_ADS1115 &ads, PWMStepperController *zAxis){
   this->interruptPin = interruptPin;
   this->ads = &ads;
+  this->zAxis = zAxis;
   offset = 0;
 
   // setup interrupt pin
@@ -50,13 +51,27 @@ void ADCController::stopADC(){
 }
 
 
-void ADCController::tare(){
+void ADCController::tare(uint16_t stepDelay){
   // set the tare offset by averaging 256 readings.
   int32_t sum = 0;
-  for (int i = 0; i < 256; i++){
+
+  // start moving down to average while moving
+  zAxis->resetDisplacement();
+  zAxis->startMovingDown(stepDelay);
+  // wait for things to stabilize
+  delay(150);
+  // average the readings while moving
+  for (int i = 0; i < 356; i++){
     sum += ads->readADC_Differential_0_1();
   }
-  offset = sum / 256;
+  // reset position to where we started
+  zAxis->stopMoving();
+  zAxis->startMovingUp(stepDelay);
+  while(zAxis->getDisplacement() > 0);
+  zAxis->stopMoving();
+  zAxis->resetDisplacement();
+
+  offset = sum / 356;
 }
 
 

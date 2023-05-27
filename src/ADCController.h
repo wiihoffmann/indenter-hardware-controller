@@ -10,6 +10,7 @@
 #include <Arduino.h>
 #include <Adafruit_ADS1X15.h>
 #include <SPI.h>
+#include "PWMStepperController.h"
 
 #ifndef __ADC_CONTROLLER__
   #define __ADC_CONTROLLER__
@@ -19,6 +20,7 @@
       uint8_t interruptPin;   // pin the interrupt signal on the ADC connects to
       int16_t offset;         // tare offset
       Adafruit_ADS1X15 *ads;  // the ADC object
+      PWMStepperController *zAxis;
 
       /**
       * Sets the function to be called when the ADC alert pin goes high
@@ -34,12 +36,12 @@
       * @param interruptPin The interrupt pin number that the ADC alert line is connected to.
       * @param ads          A reference to the ADS object which initializes the ADC.
       */
-      ADCController(uint8_t interruptPin, Adafruit_ADS1115 &ads);
+      ADCController(uint8_t interruptPin, Adafruit_ADS1115 &ads, PWMStepperController *zAxis);
 
       /**
        * Zero the reading from the ADC 
        */
-      void tare();
+      void tare(uint16_t stepDelay);
 
       /**
        * Gets the reading of the ADC relative to the tare point

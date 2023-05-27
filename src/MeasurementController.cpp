@@ -140,7 +140,7 @@ void MeasurementController::runRegularTest(MeasurementParams &params, Communicat
   // home the zAxis and start the ADC conversion process
   zAxis->invertDirection(params.flipDirection);
   zAxis->resetDisplacement();
-  adc->tare();
+  adc->tare(params.stepDelay);
 
   
   for(uint16_t i = 0; i < params.iterations && eStop == false; i++){
@@ -219,7 +219,7 @@ void MeasurementController::runPPTTest(MeasurementParams &params, Communicator *
   // home the zAxis and start the ADC conversion process
   zAxis->invertDirection(params.flipDirection);
   zAxis->resetDisplacement();
-  adc->tare();
+  adc->tare(params.stepDelay);
 
   
   for(uint16_t i = 0; i < params.iterations && eStop == false; i++){
@@ -291,7 +291,7 @@ void MeasurementController::runPPITest(MeasurementParams &params, Communicator *
   // home the zAxis and start the ADC conversion process
   zAxis->invertDirection(params.flipDirection);
   zAxis->resetDisplacement();
-  adc->tare();
+  adc->tare(params.stepDelay);
 
   
   for(uint16_t i = 0; i < params.iterations && eStop == false; i++){
@@ -383,7 +383,7 @@ void MeasurementController::runTemporalSummationTest(MeasurementParams &params, 
   // home the zAxis and start the ADC conversion process
   zAxis->invertDirection(params.flipDirection);
   zAxis->resetDisplacement();
-  adc->tare();
+  adc->tare(params.stepDelay);
   adc->startADC([](){dataReady = true;});
   
   for(uint16_t i = 0; i < params.iterations && eStop == false; i++){

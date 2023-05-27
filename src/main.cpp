@@ -48,7 +48,7 @@ void setup(void){
   zAxis = new BasicStepperController(Z_STEP_PIN, Z_DIR_PIN, true);
   zAxisPWM = new PWMStepperController(Z_STEP_PIN, Z_DIR_PIN);
 
-  adc = new ADCController(ADC_INTERRUPT_PIN, ads);
+  adc = new ADCController(ADC_INTERRUPT_PIN, ads, zAxisPWM);
 
   indenter = MeasurementController::getInstance();
   indenter->setUpController(adc, zAxisPWM, E_STOP_INTERRUPT_PIN, SOLENOID_PIN, VACUUM_PIN, VAS_SLIDER_PIN, INDICATOR_BUTTON_PIN);
