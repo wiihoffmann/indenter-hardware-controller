@@ -59,9 +59,9 @@ void ADCController::tare(uint16_t stepDelay){
   zAxis->resetDisplacement();
   zAxis->startMovingDown(stepDelay);
   // wait for things to stabilize
-  delay(100);
+  delay(150);
   // average the readings while moving
-  for (int i = 0; i < 512; i++){
+  for (int i = 0; i < 356; i++){
     sum += ads->readADC_Differential_0_1();
   }
   // reset position to where we started
@@ -71,7 +71,7 @@ void ADCController::tare(uint16_t stepDelay){
   zAxis->stopMoving();
   zAxis->resetDisplacement();
 
-  offset = sum / 512;
+  offset = sum / 356;
 }
 
 
