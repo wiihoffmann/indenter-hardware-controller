@@ -12,6 +12,7 @@ uint8_t MeasurementController::solenoidPin;
 uint8_t MeasurementController::vacuumPin;
 uint8_t MeasurementController::VASPin;
 uint8_t MeasurementController::indicatorPin;
+int16_t MeasurementController::integral;
 
 
 MeasurementController* MeasurementController::getInstance(){
@@ -22,6 +23,7 @@ MeasurementController* MeasurementController::getInstance(){
 
 MeasurementController::MeasurementController(){
   Serial.flush();
+  integral = 0;
 }
 
 
@@ -74,19 +76,38 @@ void MeasurementController::applyLoad(int16_t targetLoad, uint16_t stepDelay, in
 }
 
 
-void MeasurementController::holdLoad(int16_t targetLoad, uint16_t tolerance, uint16_t holdDownDelay, uint16_t holdUpDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage, boolean runVacuum, boolean stopVacuum){
+void MeasurementController::holdLoad(int16_t targetLoad, uint16_t tolerance, float holdKp, float holdKi, uint16_t minStepDelay, uint16_t holdTime, int16_t loadActual, uint8_t &stage, boolean runVacuum, boolean stopVacuum){
   if(holdStartTime == 0){
     holdStartTime = millis();
     // turn on the vacuum 
     if(runVacuum) digitalWrite(vacuumPin, HIGH);
   }
 
-  // if the load is above the upper limit and we are not already moving up -> move up;
-  if(loadActual > tolerance + targetLoad && zAxis->getDirection() != 1) zAxis->startMovingUp(holdUpDelay);
-  // if the load is below the lower limit and we are not already moving down -> move down;
-  else if(loadActual < (double)targetLoad - tolerance && zAxis->getDirection() != -1) zAxis->startMovingDown(holdDownDelay);
-  // else we are within the tolerances -> do nothing
+  // PID math for holding load
+  int16_t error = targetLoad - loadActual;
+  integral += error;
+  float control = (holdKp * (float)error) + (holdKi * (float)integral);
+  // clamp PID output range within uint16 range
+  if(control > 65535) control = 65535;
+  else if (control < -65535) control = -65535;
+  uint16_t stepDelay = 65535 - abs(control);
+  if(stepDelay < minStepDelay) stepDelay = minStepDelay; // clamp max movement speed to approach speed
+
+  if(control > 0 && abs(error) >= tolerance){
+    zAxis->startMovingDown(stepDelay);
+  }
+  else if(control < 0 && abs(error) >= tolerance){
+    zAxis->startMovingUp(stepDelay);
+  }
   else zAxis->stopMoving();
+
+
+  // // if the load is above the upper limit and we are not already moving up -> move up;
+  // if(loadActual > tolerance + targetLoad && zAxis->getDirection() != 1) zAxis->startMovingUp(holdUpDelay);
+  // // if the load is below the lower limit and we are not already moving down -> move down;
+  // else if(loadActual < (double)targetLoad - tolerance && zAxis->getDirection() != -1) zAxis->startMovingDown(holdDownDelay);
+  // // else we are within the tolerances -> do nothing
+  // else zAxis->stopMoving();
 
   // move on to next stage once hold time has elapsed
   if(millis() - holdStartTime >= holdTime){
@@ -148,13 +169,13 @@ void MeasurementController::runRegularTest(MeasurementParams &params, Communicat
             applyLoad(params.preload, params.stepDelay, load, stage);
             break;
           case 1: // preload hold
-            holdLoad(params.preload, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.preloadTime, load, stage, true, !params.constantVacuum);
+            holdLoad(params.preload, params.tolerance, params.holdKp, params.holdKi, params.stepDelay, params.preloadTime, load, stage, true, !params.constantVacuum);
             break;
           case 2: // main load approach
-            applyLoad(params.maxLoad, params.stepDelay, load, stage);     
+            applyLoad(params.maxLoad, params.stepDelay, load, stage);
             break;
           case 3: // main load hold
-            holdLoad(params.maxLoad, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.maxLoadTime, load, stage, false, !params.constantVacuum);   
+            holdLoad(params.maxLoad, params.tolerance, params.holdKp, params.holdKi, params.stepDelay, params.maxLoadTime, load, stage, false, !params.constantVacuum);   
             break;
           case 4: // retract
             removeLoad(params.stepDelay, stage);
@@ -299,7 +320,7 @@ void MeasurementController::runPPITest(MeasurementParams &params, Communicator *
             applyLoad(params.maxLoad, params.stepDelay, load, stage);     
             break;
           case 1: // preload hold
-            holdLoad(params.maxLoad, params.tolerance, params.holdDownDelay, params.holdUpDelay, params.maxLoadTime, load, stage, false, false);
+            holdLoad(params.maxLoad, params.tolerance, params.holdKp, params.holdKi, params.stepDelay, params.maxLoadTime, load, stage, false, false);
             break;
           case 2: // retract
             removeLoad(params.stepDelay, stage);

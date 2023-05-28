@@ -42,8 +42,8 @@
     int16_t maxLoad;        // the max load to apply (target ADC reading)
     uint16_t maxLoadTime;   // how long to hold the max load (millis)
     uint16_t stepDelay;     // delay between steps (micros)
-    uint16_t holdDownDelay; // delay between steps (micros) when moving down to maintain load
-    uint16_t holdUpDelay;   // delay between steps (micros) when moving up to maintain load
+    float holdKp; // delay between steps (micros) when moving down to maintain load
+    float holdKi;   // delay between steps (micros) when moving up to maintain load
     uint16_t eStopStepDelay;// delay between steps (micros) when performing an emergency stop
     uint16_t tolerance;     // the hysterisis around the set load point (in raw ADC units)
     uint16_t iterations;    // how many interations of the test to run
