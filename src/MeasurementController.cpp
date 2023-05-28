@@ -84,7 +84,7 @@ void MeasurementController::holdLoad(int16_t targetLoad, uint16_t tolerance, flo
   }
 
   // PID math for holding load
-  int16_t error = targetLoad + tolerance - loadActual;
+  int16_t error = targetLoad - loadActual;
   integral += error;
   float control = (holdKp * (float)error) + (holdKi * (float)integral);
   // clamp PID output range within uint16 range
