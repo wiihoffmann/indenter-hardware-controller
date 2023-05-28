@@ -12,6 +12,7 @@ uint8_t MeasurementController::solenoidPin;
 uint8_t MeasurementController::vacuumPin;
 uint8_t MeasurementController::VASPin;
 uint8_t MeasurementController::indicatorPin;
+int16_t MeasurementController::integral;
 
 
 MeasurementController* MeasurementController::getInstance(){
@@ -83,7 +84,7 @@ void MeasurementController::holdLoad(int16_t targetLoad, uint16_t tolerance, flo
   }
 
   // PID math for holding load
-  int16_t error = targetLoad - loadActual;
+  int16_t error = targetLoad + tolerance - loadActual;
   integral += error;
   float control = (holdKp * (float)error) + (holdKi * (float)integral);
   // clamp PID output range within uint16 range
